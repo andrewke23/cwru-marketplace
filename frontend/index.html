@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CWRU Marketplace MVP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* Tailwind gray-50 */
+        }
+        .page-section { display: none; }
+        .active-page { display: block; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        .page-section { animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .item-card-image { aspect-ratio: 4 / 3; object-fit: cover; width: 100%; height: 100%; }
+        .clamp-lines-3 { overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+        #imagePreview, #editImagePreview { max-width: 200px; max-height: 200px; margin-top: 10px; border-radius: 0.375rem; border: 1px solid #e5e7eb; object-fit: cover; }
+        .archived-item-card { /* Styles for the entire card when archived */
+            opacity: 0.7;
+            border: 1px dashed #9ca3af; /* Tailwind gray-400 */
+        }
+        .archived-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background-color: rgba(75, 85, 99, 0.8); /* Tailwind gray-600 with opacity */
+            color: white;
+            padding: 3px 8px;
+            border-radius: 0.375rem; /* rounded-md */
+            font-size: 0.75rem; /* text-xs */
+            font-weight: 600; /* font-semibold */
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap items-center justify-between">
+            <a href="#" id="logoLink" class="text-2xl font-bold text-blue-600">CWRU Marketplace</a>
+            <div class="w-full md:w-1/2 order-3 md:order-2 mt-4 md:mt-0 flex-grow md:flex-grow-0">
+                <div class="relative">
+                    <input type="search" id="searchInput" placeholder="Search for textbooks, furniture, etc..." class="w-full p-3 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <svg class="w-5 h-5 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/></svg>
+                    </div>
+                </div>
+            </div>
+            <div class="order-2 md:order-3 flex items-center space-x-2 sm:space-x-4">
+                <button id="homeLink" class="nav-link text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Home</button>
+                <button id="postItemLink" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium shadow hover:shadow-lg transition duration-150 hidden">Post Item</button>
+                <div id="authLinks"><button id="loginRegisterLink" class="nav-link text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Login/Register</button></div>
+                <div id="userLinks" class="hidden">
+                    <span id="welcomeUserName" class="text-gray-700 text-sm font-medium mr-2"></span>
+                    <button id="myListingsLink" class="nav-link text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">My Listings</button>
+                    <button id="logoutButton" class="text-red-500 hover:text-red-700 px-3 py-2 rounded-md text-sm font-medium">Logout</button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <div id="messageBox" class="hidden fixed top-5 right-5 bg-blue-500 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm">
+            <p id="messageText"></p><button id="closeMessageButton" class="absolute top-1 right-2 text-xl font-bold">&times;</button>
+        </div>
+
+        <section id="homePage" class="page-section active-page">
+            <h1 class="text-3xl font-bold mb-8 text-center text-gray-700">Recent Listings</h1>
+            <div id="itemGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+            <div id="noResultsMessage" class="hidden text-center text-gray-500 mt-10"><p class="text-xl">No items found.</p></div>
+            <div id="loadingIndicator" class="hidden text-center text-blue-500 mt-10"><p class="text-xl">Loading items...</p></div>
+        </section>
+
+        <section id="loginRegisterPage" class="page-section">
+            <div class="max-w-md mx-auto bg-white p-8 rounded-xl shadow-lg">
+                <h1 class="text-3xl font-bold mb-8 text-center text-gray-700">Welcome!</h1>
+                <div class="mb-6 border-b border-gray-200">
+                    <nav class="flex space-x-4" aria-label="Tabs">
+                        <button id="loginTabButton" class="tab-button text-blue-600 border-b-2 border-blue-600 py-3 px-1 text-center font-medium text-lg" aria-current="page">Login</button>
+                        <button id="registerTabButton" class="tab-button text-gray-500 hover:text-gray-700 hover:border-gray-300 py-3 px-1 text-center font-medium text-lg">Register</button>
+                    </nav>
+                </div>
+                <form id="loginForm" class="space-y-6">
+                    <div><label for="loginEmail" class="block text-sm font-medium text-gray-700">Email address</label><input type="email" id="loginEmail" name="email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="you@case.edu"></div>
+                    <div><label for="loginPassword" class="block text-sm font-medium text-gray-700">Password</label><input type="password" id="loginPassword" name="password" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="••••••••"></div>
+                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Sign in</button>
+                </form>
+                <form id="registerForm" class="space-y-6 hidden">
+                    <div><label for="registerFullName" class="block text-sm font-medium text-gray-700">Full Name</label><input type="text" id="registerFullName" name="fullName" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="John Doe"></div>
+                    <div><label for="registerEmail" class="block text-sm font-medium text-gray-700">CWRU Email address (.edu)</label><input type="email" id="registerEmail" name="email" required pattern=".+@case\.edu" title="Please use your CWRU email address (e.g., xyz123@case.edu)" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="xyz123@case.edu"><p class="mt-1 text-xs text-gray-500">Must be a valid @case.edu email.</p></div>
+                    <div><label for="registerPassword" class="block text-sm font-medium text-gray-700">Password</label><input type="password" id="registerPassword" name="password" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Choose a strong password"></div>
+                    <div><label for="registerConfirmPassword" class="block text-sm font-medium text-gray-700">Confirm Password</label><input type="password" id="registerConfirmPassword" name="confirmPassword" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Confirm your password"></div>
+                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">Create Account</button>
+                </form>
+            </div>
+        </section>
+
+        <section id="postItemPage" class="page-section">
+            <div class="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-lg">
+                <h1 class="text-3xl font-bold mb-8 text-center text-gray-700">Create New Listing</h1>
+                <form id="postItemForm" class="space-y-6">
+                    <div><label for="itemName" class="block text-sm font-medium text-gray-700">Item Name</label><input type="text" id="itemName" name="itemName" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Organic Chemistry Textbook"></div>
+                    <div><label for="itemDescription" class="block text-sm font-medium text-gray-700">Description</label><textarea id="itemDescription" name="itemDescription" rows="4" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Include condition, edition, etc."></textarea></div>
+                    <div><label for="itemPrice" class="block text-sm font-medium text-gray-700">Price ($)</label><input type="number" id="itemPrice" name="itemPrice" step="0.01" min="0" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., 45.00"></div>
+                    <div><label for="itemCategory" class="block text-sm font-medium text-gray-700">Category</label><select id="itemCategory" name="itemCategory" required class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"><option value="">Select a category</option><option value="textbooks">Textbooks</option><option value="furniture">Furniture</option><option value="clothing">Clothing</option><option value="electronics">Electronics</option><option value="other">Other</option></select></div>
+                    <div>
+                        <label for="itemImageFile" class="block text-sm font-medium text-gray-700">Upload Image (Optional)</label>
+                        <input type="file" id="itemImageFile" name="itemImageFile" accept="image/jpeg,image/png,image/gif" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        <img id="imagePreview" src="#" alt="Image Preview" class="hidden"/>
+                        <p class="mt-1 text-xs text-gray-500">Max 5MB. Accepted: JPG, PNG, GIF.</p>
+                    </div>
+                    <div>
+                        <label for="itemImageUrl" class="block text-sm font-medium text-gray-700">Or Enter Image URL (Optional)</label>
+                        <input type="url" id="itemImageUrl" name="itemImageUrl" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="https://example.com/image.jpg">
+                        <p class="mt-1 text-xs text-gray-500">If you upload an image, this URL will be ignored.</p>
+                    </div>
+                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Post Item</button>
+                </form>
+            </div>
+        </section>
+
+        <section id="editItemPage" class="page-section">
+            <div class="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-lg">
+                <h1 class="text-3xl font-bold mb-8 text-center text-gray-700">Edit Your Listing</h1>
+                <form id="editItemForm" class="space-y-6">
+                    <input type="hidden" id="editItemId" name="editItemId"> 
+                    <div><label for="editItemName" class="block text-sm font-medium text-gray-700">Item Name</label><input type="text" id="editItemName" name="itemName" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
+                    <div><label for="editItemDescription" class="block text-sm font-medium text-gray-700">Description</label><textarea id="editItemDescription" name="itemDescription" rows="4" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea></div>
+                    <div><label for="editItemPrice" class="block text-sm font-medium text-gray-700">Price ($)</label><input type="number" id="editItemPrice" name="itemPrice" step="0.01" min="0" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
+                    <div><label for="editItemCategory" class="block text-sm font-medium text-gray-700">Category</label><select id="editItemCategory" name="itemCategory" required class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"><option value="">Select a category</option><option value="textbooks">Textbooks</option><option value="furniture">Furniture</option><option value="clothing">Clothing</option><option value="electronics">Electronics</option><option value="other">Other</option></select></div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Current Image:</label>
+                        <img id="editCurrentImagePreview" src="#" alt="Current Item Image" class="my-2 max-h-40 rounded border"/>
+                    </div>
+                    <div>
+                        <label for="editItemImageFile" class="block text-sm font-medium text-gray-700">Upload New Image (Optional)</label>
+                        <input type="file" id="editItemImageFile" name="itemImageFile" accept="image/jpeg,image/png,image/gif" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        <img id="editImagePreview" src="#" alt="New Image Preview" class="hidden"/>
+                        <p class="mt-1 text-xs text-gray-500">Max 5MB. Replaces current image if selected.</p>
+                    </div>
+                    <div>
+                        <label for="editItemImageUrl" class="block text-sm font-medium text-gray-700">Or Enter New Image URL (Optional)</label>
+                        <input type="url" id="editItemImageUrl" name="itemImageUrl" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="https://example.com/new_image.jpg">
+                        <p class="mt-1 text-xs text-gray-500">Replaces current image. If both uploaded and URL provided, upload takes precedence. Leave blank to keep current image or if uploading.</p>
+                    </div>
+                    <div class="flex space-x-4">
+                        <button type="submit" class="flex-1 w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">Save Changes</button>
+                        <button type="button" id="cancelEditButton" class="flex-1 w-full flex justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <section id="itemDetailsPage" class="page-section">
+            <div class="max-w-4xl mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-lg">
+                <button id="backToHomeFromDetails" class="mb-6 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"><svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>Back to listings</button>
+                <div id="itemDetailContent" class="grid grid-cols-1 md:grid-cols-2 gap-8"></div>
+                <div id="itemDetailStatus" class="mt-4 text-center"></div>
+                <div id="itemDetailOwnerActions" class="mt-6 hidden"> 
+                     <button id="editItemDetailButton" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg shadow mr-2">Edit Item</button>
+                     <button id="archiveItemDetailButton" class="bg-slate-500 hover:bg-slate-600 text-white font-semibold py-2 px-4 rounded-lg shadow">Archive Item</button> 
+                </div>
+                <div id="itemDetailLoadingIndicator" class="hidden text-center text-blue-500 mt-10"><p class="text-xl">Loading item details...</p></div>
+            </div>
+        </section>
+
+        <section id="myListingsPage" class="page-section">
+            <h1 class="text-3xl font-bold mb-8 text-center text-gray-700">My Listings</h1>
+            <div id="myListingsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+            <div id="noMyListingsMessage" class="hidden text-center text-gray-500 mt-10"><p class="text-xl">You haven't posted any items yet.</p><button id="postFirstItemLink" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow">Post Your First Item</button></div>
+        </section>
+    </main>
+
+    <footer class="bg-gray-100 border-t border-gray-200 mt-12">
+        <div class="container mx-auto px-6 py-8 text-center text-gray-600"><p>&copy; <span id="currentYear"></span> CWRU Marketplace. A student project.</p><p class="text-sm mt-1">This is an MVP for demonstration purposes.</p></div>
+    </footer>
+
+    <script>
+        // --- Configuration ---
+        const API_BASE_URL = 'http://localhost:5000'; 
+        const API_ENDPOINT_PREFIX = '/api'; 
+
+        // --- Global State ---
+        let currentUser = null; 
+        let currentToken = null;
+        let allItemsCache = []; 
+        let editingItemId = null; 
+
+        // --- DOM Elements ---
+        const pages = document.querySelectorAll('.page-section');
+        const itemGrid = document.getElementById('itemGrid');
+        const noResultsMessage = document.getElementById('noResultsMessage');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const searchInput = document.getElementById('searchInput');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const loginTabButton = document.getElementById('loginTabButton');
+        const registerTabButton = document.getElementById('registerTabButton');
+        const postItemForm = document.getElementById('postItemForm');
+        const itemImageFileInput = document.getElementById('itemImageFile');
+        const itemImageUrlInput = document.getElementById('itemImageUrl');
+        const imagePreview = document.getElementById('imagePreview');
+        const editItemForm = document.getElementById('editItemForm');
+        const editItemIdInput = document.getElementById('editItemId');
+        const editItemNameInput = document.getElementById('editItemName');
+        const editItemDescriptionInput = document.getElementById('editItemDescription');
+        const editItemPriceInput = document.getElementById('editItemPrice');
+        const editItemCategoryInput = document.getElementById('editItemCategory');
+        const editCurrentImagePreview = document.getElementById('editCurrentImagePreview');
+        const editItemImageFileInput = document.getElementById('editItemImageFile');
+        const editItemImageUrlInput = document.getElementById('editItemImageUrl');
+        const editImagePreview = document.getElementById('editImagePreview');
+        const cancelEditButton = document.getElementById('cancelEditButton');
+        const authLinks = document.getElementById('authLinks');
+        const userLinks = document.getElementById('userLinks');
+        const welcomeUserName = document.getElementById('welcomeUserName');
+        const itemDetailContent = document.getElementById('itemDetailContent');
+        const itemDetailStatus = document.getElementById('itemDetailStatus');
+        const itemDetailOwnerActions = document.getElementById('itemDetailOwnerActions');
+        const editItemDetailButton = document.getElementById('editItemDetailButton');
+        const archiveItemDetailButton = document.getElementById('archiveItemDetailButton');
+        const itemDetailLoadingIndicator = document.getElementById('itemDetailLoadingIndicator');
+        const myListingsGrid = document.getElementById('myListingsGrid');
+        const noMyListingsMessage = document.getElementById('noMyListingsMessage');
+        const messageBox = document.getElementById('messageBox');
+        const messageText = document.getElementById('messageText');
+        const closeMessageButton = document.getElementById('closeMessageButton');
+
+        // --- Utility Functions ---
+        function showPage(pageId) {
+            pages.forEach(page => { page.classList.remove('active-page'); page.classList.add('hidden'); });
+            const activePage = document.getElementById(pageId);
+            if (activePage) { activePage.classList.add('active-page'); activePage.classList.remove('hidden'); }
+            window.scrollTo(0, 0);
+        }
+        function showMessage(message, type = 'info') {
+            messageText.textContent = message;
+            messageBox.classList.remove('hidden', 'bg-blue-500', 'bg-green-500', 'bg-red-500');
+            if (type === 'success') messageBox.classList.add('bg-green-500');
+            else if (type === 'error') messageBox.classList.add('bg-red-500');
+            else messageBox.classList.add('bg-blue-500');
+            messageBox.classList.remove('hidden');
+            setTimeout(() => messageBox.classList.add('hidden'), 5000);
+        }
+        closeMessageButton.addEventListener('click', () => messageBox.classList.add('hidden'));
+        function updateNav() {
+            if (currentUser && currentToken) {
+                authLinks.classList.add('hidden'); userLinks.classList.remove('hidden');
+                welcomeUserName.textContent = `Hi, ${currentUser.fullName.split(' ')[0]}!`;
+                document.getElementById('postItemLink').classList.remove('hidden');
+            } else {
+                authLinks.classList.remove('hidden'); userLinks.classList.add('hidden');
+                welcomeUserName.textContent = ''; document.getElementById('postItemLink').classList.add('hidden');
+            }
+        }
+        function storeAuthData(userData, token) {
+            currentUser = userData; currentToken = token;
+            localStorage.setItem('cwruMarketplaceUser', JSON.stringify(userData));
+            localStorage.setItem('cwruMarketplaceToken', token);
+        }
+        function clearAuthData() {
+            currentUser = null; currentToken = null;
+            localStorage.removeItem('cwruMarketplaceUser'); localStorage.removeItem('cwruMarketplaceToken');
+        }
+        function loadAuthDataFromStorage() {
+            const storedUser = localStorage.getItem('cwruMarketplaceUser');
+            const storedToken = localStorage.getItem('cwruMarketplaceToken');
+            if (storedUser && storedToken) { currentUser = JSON.parse(storedUser); currentToken = storedToken; return true; }
+            return false;
+        }
+        async function fetchApi(endpoint, method = 'GET', body = null, requiresAuth = false, isFormData = false) {
+            const headers = {}; 
+            if (!isFormData) { headers['Content-Type'] = 'application/json'; }
+            if (requiresAuth && currentToken) { headers['Authorization'] = `Bearer ${currentToken}`; }
+            const config = { method, headers };
+            if (body) { config.body = isFormData ? body : JSON.stringify(body); }
+            try {
+                const response = await fetch(`${API_BASE_URL}${API_ENDPOINT_PREFIX}${endpoint}`, config);
+                const data = await response.json();
+                if (!response.ok) { throw new Error(data.message || `Error: ${response.status} ${response.statusText}`); }
+                return data;
+            } catch (error) {
+                console.error(`API Error (${method} ${API_ENDPOINT_PREFIX}${endpoint}):`, error);
+                showMessage(error.message || 'A network error occurred. Please try again.', 'error');
+                throw error;
+            }
+        }
+
+        // --- Rendering Functions ---
+        function createItemCard(item, isMyListing = false) {
+            const card = document.createElement('div');
+            // Add 'relative' for positioning the badge, and 'archived-item-card' if archived
+            card.className = `bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300 flex flex-col relative ${item.isArchived ? 'archived-item-card' : ''}`;
+            
+            let displayImageUrl = item.imageUrl || 'https://placehold.co/400x300/e2e8f0/cbd5e0?text=No+Image';
+            if (item.imageUrl && item.imageUrl.startsWith('/uploads/')) {
+                displayImageUrl = `${API_BASE_URL}${item.imageUrl}`;
+            }
+
+            let archivedBadgeHtml = '';
+            if (item.isArchived && isMyListing) { // Show badge only on "My Listings" for archived items
+                archivedBadgeHtml = `<div class="archived-badge">Archived</div>`;
+            }
+
+            let showOwnerActions = false;
+            if (isMyListing && currentUser && item.sellerId === currentUser.id) {
+                showOwnerActions = true;
+            }
+
+            let ownerActionsHtml = '';
+            if (showOwnerActions) {
+                const archiveButtonText = item.isArchived ? 'Unarchive' : 'Archive';
+                const archiveButtonBaseClass = 'flex-1 text-white text-xs font-semibold py-1 px-2 rounded-md transition duration-150';
+                const archiveButtonColorClass = item.isArchived ? 'bg-sky-500 hover:bg-sky-600' : 'bg-slate-500 hover:bg-slate-600';
+                
+                const editButtonDisabled = item.isArchived;
+                const editButtonClass = `edit-item-btn flex-1 bg-yellow-400 hover:bg-yellow-500 text-white text-xs font-semibold py-1 px-2 rounded-md transition duration-150 ${editButtonDisabled ? 'opacity-50 cursor-not-allowed' : ''}`;
+
+                ownerActionsHtml = `
+                    <div class="mt-3 flex space-x-2">
+                        <button data-item-id="${item.id}" class="${editButtonClass}" ${editButtonDisabled ? 'disabled' : ''}>Edit</button>
+                        <button data-item-id="${item.id}" class="toggle-archive-btn ${archiveButtonBaseClass} ${archiveButtonColorClass}">${archiveButtonText}</button>
+                    </div>
+                `;
+            }
+
+            card.innerHTML = `
+                ${archivedBadgeHtml}
+                <div class="w-full h-48 sm:h-56 bg-gray-200">
+                    <img src="${displayImageUrl}" alt="${item.name}" class="item-card-image" onerror="this.onerror=null;this.src='https://placehold.co/400x300/cccccc/999999?text=Image+Error';">
+                </div>
+                <div class="p-5 flex flex-col flex-grow">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2 truncate" title="${item.name}">${item.name}</h3>
+                    <p class="text-2xl font-bold text-blue-600 mb-3">$${parseFloat(item.price).toFixed(2)}</p>
+                    <p class="text-sm text-gray-600 mb-4 flex-grow clamp-lines-3" title="${item.description}">${item.description ? item.description.substring(0, 100) + (item.description.length > 100 ? '...' : '') : 'No description.'}</p>
+                    <button data-item-id="${item.id}" class="view-details-btn mt-auto w-full bg-slate-700 hover:bg-slate-800 text-white font-semibold py-2 px-4 rounded-lg transition duration-150">View Details</button>
+                    ${ownerActionsHtml} 
+                </div>`;
+            
+            card.querySelector('.view-details-btn').addEventListener('click', () => showItemDetailsPage(item.id));
+            if (showOwnerActions) { 
+                const editBtn = card.querySelector('.edit-item-btn');
+                const archiveBtn = card.querySelector('.toggle-archive-btn');
+                if(editBtn && !item.isArchived) {
+                     editBtn.addEventListener('click', (e) => {
+                        e.stopPropagation(); 
+                        populateEditFormAndShow(item.id);
+                    });
+                }
+                if(archiveBtn) archiveBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); 
+                    handleToggleArchive(item.id, 'myListingsPage');
+                });
+            }
+            return card;
+        }
+
+        async function renderItems(itemsToRender) {
+            itemGrid.innerHTML = '';
+            if (itemsToRender && itemsToRender.length === 0) noResultsMessage.classList.remove('hidden');
+            else if (itemsToRender) {
+                noResultsMessage.classList.add('hidden');
+                itemsToRender.forEach(item => itemGrid.appendChild(createItemCard(item, false)));
+            }
+        }
+        
+        async function loadAndRenderItems(searchTerm = '', categoryTerm = '') {
+            loadingIndicator.classList.remove('hidden');
+            noResultsMessage.classList.add('hidden');
+            itemGrid.innerHTML = '';
+            try {
+                let query = '/items';
+                const params = new URLSearchParams();
+                if (searchTerm) params.append('search', searchTerm);
+                if (categoryTerm) params.append('category', categoryTerm);
+                if (params.toString()) query += `?${params.toString()}`;
+                const items = await fetchApi(query); // Backend now sends only active items
+                allItemsCache = items; 
+                renderItems(items);
+            } catch (error) {
+                noResultsMessage.classList.remove('hidden');
+                noResultsMessage.querySelector('p').textContent = "Could not load items. Please try again.";
+            } finally {
+                loadingIndicator.classList.add('hidden');
+            }
+        }
+
+        async function renderMyListings() {
+            myListingsGrid.innerHTML = '';
+            noMyListingsMessage.classList.add('hidden');
+            if (!currentUser) { showMessage("Please log in to see your listings.", 'info'); showPage('loginRegisterPage'); return; }
+            loadingIndicator.classList.remove('hidden');
+            try {
+                const userItems = await fetchApi(`/items/user/${currentUser.id}`, 'GET', null, true);
+                
+                const otherItemsFromCache = allItemsCache.filter(item => item.sellerId !== currentUser.id);
+                allItemsCache = otherItemsFromCache.concat(userItems);
+
+                if (userItems.length === 0) {
+                    noMyListingsMessage.classList.remove('hidden');
+                    noMyListingsMessage.querySelector('p').textContent = "You haven't posted any items yet.";
+                } else {
+                    userItems.sort((a, b) => {
+                        if (a.isArchived && !b.isArchived) return 1;
+                        if (!a.isArchived && b.isArchived) return -1;
+                        return new Date(b.createdAt) - new Date(a.createdAt);
+                    });
+                    userItems.forEach(item => myListingsGrid.appendChild(createItemCard(item, true)));
+                }
+            } catch (error) {
+                noMyListingsMessage.classList.remove('hidden');
+                noMyListingsMessage.querySelector('p').textContent = "Could not load your listings.";
+            } finally {
+                loadingIndicator.classList.add('hidden');
+            }
+        }
+
+        // --- Page Specific Logic & Event Handlers ---
+        function handleSearch() { loadAndRenderItems(searchInput.value.toLowerCase()); }
+        
+        async function showItemDetailsPage(itemId) {
+            showPage('itemDetailsPage');
+            itemDetailContent.innerHTML = '';
+            itemDetailStatus.textContent = ''; 
+            itemDetailOwnerActions.classList.add('hidden'); 
+            itemDetailLoadingIndicator.classList.remove('hidden');
+            try {
+                let item = allItemsCache.find(i => i.id === parseInt(itemId));
+                if (!item) item = await fetchApi(`/items/${itemId}`);
+                
+                if (item) {
+                    if (!allItemsCache.find(i => i.id === item.id)) allItemsCache.push(item);
+
+                    let displayImageUrl = item.imageUrl || 'https://placehold.co/600x400/e2e8f0/cbd5e0?text=No+Image';
+                    if (item.imageUrl && item.imageUrl.startsWith('/uploads/')) {
+                         displayImageUrl = `${API_BASE_URL}${item.imageUrl}`;
+                    }
+                    itemDetailContent.innerHTML = `
+                        <div class="${item.isArchived ? 'opacity-60' : ''}"><img src="${displayImageUrl}" alt="${item.name}" class="w-full h-auto object-cover rounded-lg shadow-md" onerror="this.onerror=null;this.src='https://placehold.co/600x400/cccccc/999999?text=Image+Error';"></div>
+                        <div>
+                            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-3">${item.name}</h1>
+                            <p class="text-3xl text-blue-600 font-semibold mb-5">$${parseFloat(item.price).toFixed(2)}</p>
+                            <div class="mb-6"><h3 class="text-lg font-semibold text-gray-700 mb-2">Description</h3><p class="text-gray-600 leading-relaxed">${item.description || 'No description provided.'}</p></div>
+                            <div class="mb-6"><h3 class="text-lg font-semibold text-gray-700 mb-1">Category</h3><p class="text-gray-600">${item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : 'N/A'}</p></div>
+                            <div class="mb-6"><h3 class="text-lg font-semibold text-gray-700 mb-1">Seller</h3><p class="text-gray-600">${item.sellerName || 'N/A'} (${item.sellerEmail || 'N/A'})</p></div>
+                            <button class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg shadow hover:shadow-lg transition duration-150 contact-seller-btn ${item.isArchived ? 'opacity-50 cursor-not-allowed' : ''}" ${item.isArchived ? 'disabled' : ''}>Contact Seller (Feature Coming Soon)</button>
+                        </div>`;
+                    
+                    if (item.isArchived) {
+                        itemDetailStatus.innerHTML = `<p class="text-orange-600 font-semibold p-2 bg-orange-100 rounded-md">This item is archived and not visible in the public marketplace.</p>`;
+                    }
+
+                    if (currentUser && item.sellerId === currentUser.id) {
+                        itemDetailOwnerActions.classList.remove('hidden');
+                        editItemDetailButton.disabled = item.isArchived; 
+                        editItemDetailButton.classList.toggle('opacity-50', item.isArchived);
+                        editItemDetailButton.classList.toggle('cursor-not-allowed', item.isArchived);
+
+                        archiveItemDetailButton.textContent = item.isArchived ? 'Unarchive Item' : 'Archive Item';
+                        archiveItemDetailButton.classList.remove('bg-slate-500', 'hover:bg-slate-600', 'bg-sky-500', 'hover:bg-sky-600'); // Clear old classes
+                        if(item.isArchived) {
+                            archiveItemDetailButton.classList.add('bg-sky-500', 'hover:bg-sky-600');
+                        } else {
+                            archiveItemDetailButton.classList.add('bg-slate-500', 'hover:bg-slate-600');
+                        }
+                        
+                        editItemDetailButton.onclick = () => { if(!item.isArchived) populateEditFormAndShow(item.id); };
+                        archiveItemDetailButton.onclick = () => handleToggleArchive(item.id, 'itemDetailsPage');
+                    }
+                } else {
+                    itemDetailContent.innerHTML = `<p class="text-center text-red-500 col-span-full">Item details could not be loaded.</p>`;
+                }
+            } catch (error) {
+                 itemDetailContent.innerHTML = `<p class="text-center text-red-500 col-span-full">Error loading item: ${error.message}</p>`;
+            } finally {
+                itemDetailLoadingIndicator.classList.add('hidden');
+            }
+        }
+        
+        // --- Auth Form Logic ---
+        loginTabButton.addEventListener('click', () => { /* ... same ... */ });
+        registerTabButton.addEventListener('click', () => { /* ... same ... */ });
+        loginForm.addEventListener('submit', async (e) => { /* ... same ... */ });
+        registerForm.addEventListener('submit', async (e) => { /* ... same ... */ });
+        // (Ensure full auth logic is present from previous versions)
+        loginTabButton.addEventListener('click', () => {
+            loginForm.classList.remove('hidden'); registerForm.classList.add('hidden');
+            loginTabButton.classList.add('text-blue-600', 'border-blue-600');
+            loginTabButton.classList.remove('text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+            registerTabButton.classList.add('text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+            registerTabButton.classList.remove('text-blue-600', 'border-blue-600');
+        });
+        registerTabButton.addEventListener('click', () => {
+            registerForm.classList.remove('hidden'); loginForm.classList.add('hidden');
+            registerTabButton.classList.add('text-blue-600', 'border-blue-600');
+            registerTabButton.classList.remove('text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+            loginTabButton.classList.add('text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+            loginTabButton.classList.remove('text-blue-600', 'border-blue-600');
+        });
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = loginForm.loginEmail.value; const password = loginForm.loginPassword.value;
+            try {
+                const data = await fetchApi('/auth/login', 'POST', { email, password });
+                if (data.token && data.user) {
+                    storeAuthData(data.user, data.token);
+                    showMessage(`Successfully logged in as ${data.user.fullName}!`, 'success');
+                    updateNav(); showPage('homePage'); loadAndRenderItems(); 
+                } else { showMessage(data.message || "Login failed. Please check credentials.", 'error'); }
+            } catch (error) { /* Handled by fetchApi */ }
+            loginForm.reset();
+        });
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fullName = registerForm.registerFullName.value; const email = registerForm.registerEmail.value;
+            const password = registerForm.registerPassword.value; const confirmPassword = registerForm.registerConfirmPassword.value;
+            if (!email.endsWith('@case.edu')) { showMessage("Registration requires a CWRU email address (e.g., xyz123@case.edu).", 'error'); return; }
+            if (password !== confirmPassword) { showMessage("Passwords do not match.", 'error'); return; }
+            try {
+                const data = await fetchApi('/auth/register', 'POST', { fullName, email, password });
+                showMessage(data.message || "Registration successful! Please log in.", 'success');
+                loginTabButton.click(); registerForm.reset(); loginForm.loginEmail.value = email;
+            } catch (error) { /* Handled by fetchApi */ }
+        });
+
+
+        // --- Post Item Form Logic ---
+        postItemForm.addEventListener('submit', async (e) => { /* ... same ... */ });
+        itemImageFileInput.addEventListener('change', function(event) { /* ... same ... */ });
+        itemImageUrlInput.addEventListener('input', function() { /* ... same ... */ });
+        // (Ensure full post item logic is present from previous versions)
+        postItemForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentUser || !currentToken) { showMessage("You must be logged in to post an item.", 'error'); showPage('loginRegisterPage'); return; }
+            const formData = new FormData();
+            formData.append('name', postItemForm.itemName.value);
+            formData.append('description', postItemForm.itemDescription.value);
+            formData.append('price', parseFloat(postItemForm.itemPrice.value));
+            formData.append('category', postItemForm.itemCategory.value);
+            const imageFile = itemImageFileInput.files[0];
+            const imageUrlText = itemImageUrlInput.value.trim();
+            if (imageFile) formData.append('itemImageFile', imageFile);
+            else if (imageUrlText) formData.append('imageUrl', imageUrlText);
+            try {
+                const data = await fetchApi('/items', 'POST', formData, true, true); 
+                showMessage(data.message || "Item posted successfully!", 'success');
+                postItemForm.reset(); imagePreview.classList.add('hidden'); imagePreview.src = '#';
+                showPage('homePage'); loadAndRenderItems();
+            } catch (error) { /* Handled by fetchApi */ }
+        });
+        itemImageFileInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) { imagePreview.src = e.target.result; imagePreview.classList.remove('hidden'); }
+                reader.readAsDataURL(file); itemImageUrlInput.value = ''; 
+            } else { imagePreview.classList.add('hidden'); imagePreview.src = '#'; }
+        });
+        itemImageUrlInput.addEventListener('input', function() {
+            if (itemImageUrlInput.value.trim() !== '') {
+                itemImageFileInput.value = ''; imagePreview.classList.add('hidden'); imagePreview.src = '#';
+            }
+        });
+
+        // --- Edit Item Logic ---
+        async function populateEditFormAndShow(itemId) { /* ... same ... */ }
+        editItemImageFileInput.addEventListener('change', function(event) { /* ... same ... */ });
+        editItemImageUrlInput.addEventListener('input', function() { /* ... same ... */ });
+        editItemForm.addEventListener('submit', async (e) => { /* ... same ... */ });
+        cancelEditButton.addEventListener('click', () => { /* ... same ... */ });
+        // (Ensure full edit item logic is present from previous versions)
+        async function populateEditFormAndShow(itemId) { 
+            editingItemId = itemId;
+            let item = allItemsCache.find(i => i.id === itemId); 
+            if (!item) { 
+                try { item = await fetchApi(`/items/${itemId}`);
+                    if (item && !allItemsCache.find(i => i.id === item.id)) { allItemsCache.push(item); }
+                } catch (err) { showMessage("Could not fetch item details to edit.", 'error'); return; }
+            }
+            if (!item) { showMessage("Could not find item details to edit.", 'error'); return; }
+            editItemIdInput.value = item.id; editItemNameInput.value = item.name;
+            editItemDescriptionInput.value = item.description; editItemPriceInput.value = parseFloat(item.price).toFixed(2);
+            editItemCategoryInput.value = item.category;
+            let currentImgSrc = item.imageUrl || 'https://placehold.co/200x200/e2e8f0/cbd5e0?text=No+Image';
+            if (item.imageUrl && item.imageUrl.startsWith('/uploads/')) { currentImgSrc = `${API_BASE_URL}${item.imageUrl}`; }
+            editCurrentImagePreview.src = currentImgSrc; editCurrentImagePreview.classList.remove('hidden');
+            editItemImageUrlInput.value = (item.imageUrl && !item.imageUrl.startsWith('/uploads/') && !item.imageUrl.includes('placehold.co')) ? item.imageUrl : '';
+            editItemImageFileInput.value = ''; editImagePreview.classList.add('hidden'); editImagePreview.src = '#';
+            showPage('editItemPage');
+        }
+        editItemImageFileInput.addEventListener('change', function(event) { 
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) { editImagePreview.src = e.target.result; editImagePreview.classList.remove('hidden'); }
+                reader.readAsDataURL(file); editItemImageUrlInput.value = ''; 
+            } else { editImagePreview.classList.add('hidden'); editImagePreview.src = '#'; }
+        });
+        editItemImageUrlInput.addEventListener('input', function() { 
+            if (editItemImageUrlInput.value.trim() !== '') {
+                editItemImageFileInput.value = ''; editImagePreview.classList.add('hidden'); editImagePreview.src = '#';
+            }
+        });
+        editItemForm.addEventListener('submit', async (e) => { 
+            e.preventDefault(); if (!editingItemId) { showMessage("No item selected for editing.", 'error'); return; }
+            const formData = new FormData(); formData.append('name', editItemNameInput.value);
+            formData.append('description', editItemDescriptionInput.value); formData.append('price', parseFloat(editItemPriceInput.value));
+            formData.append('category', editItemCategoryInput.value);
+            const imageFile = editItemImageFileInput.files[0]; const imageUrlText = editItemImageUrlInput.value.trim();
+            if (imageFile) formData.append('itemImageFile', imageFile);
+            else if (imageUrlText || imageUrlText === "") formData.append('imageUrl', imageUrlText);
+            try {
+                const data = await fetchApi(`/items/${editingItemId}`, 'PUT', formData, true, true);
+                showMessage(data.message || "Item updated successfully!", 'success');
+                const index = allItemsCache.findIndex(i => i.id === editingItemId);
+                if (index !== -1) allItemsCache[index] = data.item; else { allItemsCache.push(data.item); } 
+                editingItemId = null; editItemForm.reset(); editImagePreview.classList.add('hidden'); editImagePreview.src = '#';
+                showPage('myListingsPage'); renderMyListings(); 
+            } catch (error) { /* Handled by fetchApi */ }
+        });
+        cancelEditButton.addEventListener('click', () => { 
+            const previousItemId = editingItemId; editingItemId = null; editItemForm.reset();
+            editImagePreview.classList.add('hidden'); editImagePreview.src = '#';
+            const itemDetailsPageWasActive = document.getElementById('itemDetailsPage').classList.contains('active-page');
+            if (itemDetailsPageWasActive && previousItemId) { showItemDetailsPage(previousItemId); } 
+            else { showPage('myListingsPage'); renderMyListings(); }
+        });
+
+
+        // --- Archive/Unarchive Item Logic ---
+        async function handleToggleArchive(itemId, originPageId) {
+            const item = allItemsCache.find(i => i.id === itemId);
+            if (!item) { showMessage("Item not found for archiving.", "error"); return; }
+
+            const actionText = item.isArchived ? "unarchive" : "archive";
+            if (!confirm(`Are you sure you want to ${actionText} this item?`)) {
+                return;
+            }
+            try {
+                const updatedItemData = await fetchApi(`/items/${itemId}/toggle-archive`, 'PUT', null, true);
+                showMessage(updatedItemData.message || `Item ${actionText}d successfully!`, 'success');
+                
+                const index = allItemsCache.findIndex(i => i.id === itemId);
+                if (index !== -1) {
+                    allItemsCache[index] = updatedItemData.item;
+                } else { // Should not happen if item was found initially
+                    allItemsCache.push(updatedItemData.item);
+                }
+
+                if (originPageId === 'myListingsPage' || document.getElementById('myListingsPage').classList.contains('active-page')) {
+                    renderMyListings();
+                } else if (originPageId === 'itemDetailsPage') {
+                    showItemDetailsPage(itemId); // Re-render the details page
+                } else {
+                    loadAndRenderItems(); // Refresh homepage (archived item will disappear)
+                }
+            } catch (error) { /* Handled by fetchApi */ }
+        }
+        
+        // --- Navigation & Initial Load ---
+        document.getElementById('logoLink').addEventListener('click', (e) => { e.preventDefault(); showPage('homePage'); loadAndRenderItems(); });
+        document.getElementById('homeLink').addEventListener('click', () => { showPage('homePage'); loadAndRenderItems(); });
+        document.getElementById('postItemLink').addEventListener('click', () => { if (currentUser) showPage('postItemPage'); else { showMessage("Please log in to post an item.", 'info'); showPage('loginRegisterPage'); } });
+        document.getElementById('loginRegisterLink').addEventListener('click', () => showPage('loginRegisterPage'));
+        document.getElementById('logoutButton').addEventListener('click', () => { clearAuthData(); updateNav(); showMessage("Logged out successfully.", 'info'); showPage('homePage'); loadAndRenderItems(); });
+        document.getElementById('myListingsLink').addEventListener('click', () => { if (currentUser) { showPage('myListingsPage'); renderMyListings(); } else { showMessage("Please log in to see your listings.", 'info'); showPage('loginRegisterPage'); } });
+        document.getElementById('postFirstItemLink').addEventListener('click', () => showPage('postItemPage'));
+        document.getElementById('backToHomeFromDetails').addEventListener('click', () => { showPage('homePage'); });
+
+        let searchTimeout;
+        searchInput.addEventListener('input', () => { clearTimeout(searchTimeout); searchTimeout = setTimeout(() => handleSearch(), 500); });
+
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+        if (loadAuthDataFromStorage()) {
+            console.log("User data loaded from storage.");
+        }
+        updateNav(); 
+        loadAndRenderItems(); 
+        showPage('homePage');
+
+    </script>
+</body>
+</html>
