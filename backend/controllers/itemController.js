@@ -4,7 +4,7 @@
 const Item = require('../models/Item');
 
 // Create a new item
-exports.createItem = async (req, res) => {
+const createItem = async (req, res) => {
     try {
         const { name, description, price, category } = req.body;
         let imageUrl = req.body.imageUrl;
@@ -36,7 +36,7 @@ exports.createItem = async (req, res) => {
 };
 
 // Get all active items (with optional search/filter)
-exports.getAllItems = async (req, res) => {
+const getAllItems = async (req, res) => {
     try {
         const { search, category } = req.query;
         const query = { isArchived: false };
@@ -64,7 +64,7 @@ exports.getAllItems = async (req, res) => {
 };
 
 // Get item by ID
-exports.getItemById = async (req, res) => {
+const getItemById = async (req, res) => {
     try {
         const item = await Item.findById(req.params.itemId);
         if (!item) {
@@ -78,7 +78,7 @@ exports.getItemById = async (req, res) => {
 };
 
 // Get items by user ID
-exports.getItemsByUserId = async (req, res) => {
+const getItemsByUserId = async (req, res) => {
     try {
         const items = await Item.find({ sellerId: req.params.userId })
             .sort({ isArchived: 1, createdAt: -1 });
@@ -90,7 +90,7 @@ exports.getItemsByUserId = async (req, res) => {
 };
 
 // Update item
-exports.updateItem = async (req, res) => {
+const updateItem = async (req, res) => {
     try {
         const { name, description, price, category } = req.body;
         let imageUrl = req.body.imageUrl;
@@ -132,7 +132,7 @@ exports.updateItem = async (req, res) => {
 };
 
 // Toggle archive status
-exports.toggleArchiveStatus = async (req, res) => {
+const toggleArchiveStatus = async (req, res) => {
     try {
         const item = await Item.findById(req.params.itemId);
         if (!item) {
