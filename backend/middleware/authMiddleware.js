@@ -2,6 +2,7 @@
 // Middleware to protect routes by verifying JWT
 
 const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
 // @desc    Protect routes by verifying JWT
 //          If token is valid, it adds user info to req.user
@@ -17,37 +18,29 @@ const protect = async (req, res, next) => {
             // Verify token using the JWT_SECRET from environment variables
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-            // --- Attach user to request object ---
-            // Find the user by ID from the decoded token.
-            // For MVP, we'll fetch from our global users array.
-            // In a real app, you'd query your database here.
-            const authenticatedUser = global.users.find(u => u.id === decoded.user.id);
+            // Find the user in MongoDB using the ID from the token
+            const user = await User.findById(decoded.id);
 
-            if (!authenticatedUser) {
-                // This case might happen if a user was deleted after a token was issued.
-                return res.status(401).json({ message: 'Not authorized, user not found.' });
+            if (!user) {
+                return res.status(401).json({ message: 'Not authorized, user not found' });
             }
 
-            // Exclude password from the user object attached to the request
-            const { password, ...userWithoutPassword } = authenticatedUser;
-            req.user = userWithoutPassword; // Add user object (without password) to the request
+            // Add user info to request object (password is already excluded by the User model's toJSON transform)
+            req.user = user;
 
-            next(); // Proceed to the next middleware or route handler
+            next();
         } catch (error) {
             console.error('Token verification failed:', error.message);
             if (error.name === 'JsonWebTokenError') {
-                return res.status(401).json({ message: 'Not authorized, token failed verification.' });
+                return res.status(401).json({ message: 'Not authorized, token failed verification' });
             }
             if (error.name === 'TokenExpiredError') {
-                return res.status(401).json({ message: 'Not authorized, token expired.' });
+                return res.status(401).json({ message: 'Not authorized, token expired' });
             }
-            // For other errors, pass to the global error handler
-            next(error);
+            return res.status(401).json({ message: 'Not authorized' });
         }
-    }
-
-    if (!token) {
-        res.status(401).json({ message: 'Not authorized, no token provided.' });
+    } else {
+        res.status(401).json({ message: 'Not authorized, no token provided' });
     }
 };
 
