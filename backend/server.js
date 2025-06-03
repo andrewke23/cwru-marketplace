@@ -6,6 +6,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const path = require('path'); // Core Node.js module for working with file paths
+const mongoose = require('mongoose');
 
 // Load environment variables from .env file
 dotenv.config();
@@ -16,6 +17,11 @@ const itemRoutes = require('./routes/itemRoutes');
 
 // Initialize the Express application
 const app = express();
+
+// Connect to MongoDB
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log('Connected to MongoDB successfully'))
+    .catch((err) => console.error('MongoDB connection error:', err));
 
 // --- Middleware ---
 app.use(cors());

@@ -533,7 +533,14 @@
 
         // --- Post Item Form Logic ---
         postItemForm.addEventListener('submit', async (e) => { /* ... same ... */ });
-        itemImageFileInput.addEventListener('change', function(event) { /* ... same ... */ });
+        itemImageFileInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) { imagePreview.src = e.target.result; imagePreview.classList.remove('hidden'); }
+                reader.readAsDataURL(file); itemImageUrlInput.value = '';
+            }
+        });
         itemImageUrlInput.addEventListener('input', function() { /* ... same ... */ });
         // (Ensure full post item logic is present from previous versions)
         postItemForm.addEventListener('submit', async (e) => {
@@ -554,14 +561,6 @@
                 postItemForm.reset(); imagePreview.classList.add('hidden'); imagePreview.src = '#';
                 showPage('homePage'); loadAndRenderItems();
             } catch (error) { /* Handled by fetchApi */ }
-        });
-        itemImageFileInput.addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) { imagePreview.src = e.target.result; imagePreview.classList.remove('hidden'); }
-                reader.readAsDataURL(file); itemImageUrlInput.value = ''; 
-            } else { imagePreview.classList.add('hidden'); imagePreview.src = '#'; }
         });
         itemImageUrlInput.addEventListener('input', function() {
             if (itemImageUrlInput.value.trim() !== '') {
