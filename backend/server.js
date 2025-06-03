@@ -7,6 +7,7 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const path = require('path'); // Core Node.js module for working with file paths
 const mongoose = require('mongoose');
+const multer = require('multer'); // Add multer import
 
 // Load environment variables from .env file
 dotenv.config();
@@ -27,6 +28,12 @@ mongoose.connect(process.env.MONGO_URI)
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Create uploads directory if it doesn't exist
+const fs = require('fs');
+if (!fs.existsSync('./uploads')) {
+    fs.mkdirSync('./uploads');
+}
 
 // --- Serve Static Files for Uploaded Images ---
 // This makes files in the 'uploads' directory accessible via URLs
@@ -50,16 +57,26 @@ app.get('/', (req, res) => {
     res.status(200).json({ message: 'Welcome to the CWRU Marketplace API! Image uploads enabled.' });
 });
 
-// --- Error Handling Middleware (Basic) ---
+// --- Error Handling Middleware ---
 app.use((err, req, res, next) => {
     console.error(err.stack);
-    // Multer error handling (optional, for more specific messages)
-    if (err instanceof multer.MulterError) { // Make sure multer is imported if you use this here
-        return res.status(400).json({ message: err.message });
+    
+    // Handle Multer errors
+    if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({ 
+                message: 'File is too large. Maximum size is 5MB.' 
+            });
+        }
+        return res.status(400).json({ 
+            message: `File upload error: ${err.message}` 
+        });
     }
+
+    // Handle other errors
     res.status(err.status || 500).json({
         message: err.message || 'An unexpected error occurred.',
-        ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+        ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
     });
 });
 

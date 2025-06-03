@@ -95,11 +95,6 @@ const updateItem = async (req, res) => {
         const { name, description, price, category } = req.body;
         let imageUrl = req.body.imageUrl;
 
-        // If a file was uploaded, use its path
-        if (req.file) {
-            imageUrl = `/uploads/${req.file.filename}`;
-        }
-
         const item = await Item.findById(req.params.itemId);
         if (!item) {
             return res.status(404).json({ message: 'Item not found' });
@@ -115,9 +110,15 @@ const updateItem = async (req, res) => {
         item.description = description;
         item.price = parseFloat(price);
         item.category = category;
-        if (imageUrl !== undefined) {
+
+        // Only update image if a new file is uploaded or a new URL is explicitly provided
+        if (req.file) {
+            item.imageUrl = `/uploads/${req.file.filename}`;
+        } else if (imageUrl !== undefined && imageUrl !== null && imageUrl !== '') {
+            // Only update imageUrl if it's explicitly provided and not empty
             item.imageUrl = imageUrl;
         }
+        // If neither a new file nor a new URL is provided, keep the existing image
 
         await item.save();
 

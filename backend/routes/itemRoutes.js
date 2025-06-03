@@ -19,18 +19,19 @@ const {
 // Import the authentication middleware
 const { protect } = require('../middleware/authMiddleware');
 
-// --- Multer Configuration for File Uploads (same as before) ---
+// --- Multer Configuration for File Uploads ---
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'uploads/'); // Directory to save uploaded files
+        cb(null, 'uploads/');
     },
     filename: function (req, file, cb) {
-        // Create a unique filename: fieldname-timestamp.extension
-        cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+        // Create a unique filename with original extension
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
     }
 });
 
-// File filter to accept only images (same as before)
+// File filter to accept only images
 const fileFilter = (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|gif/;
     const mimetype = allowedTypes.test(file.mimetype);
@@ -39,13 +40,16 @@ const fileFilter = (req, file, cb) => {
     if (mimetype && extname) {
         return cb(null, true);
     }
-    cb(new Error('Error: File upload only supports the following filetypes - ' + allowedTypes), false);
+    cb(new Error('Only .png, .jpg, .jpeg and .gif files are allowed'), false);
 };
 
-// Initialize Multer upload middleware (same as before)
+// Initialize Multer upload middleware with explicit limits
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 1024 * 1024 * 5 }, // 5MB limit
+    limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB limit
+        files: 1 // Only allow 1 file per request
+    },
     fileFilter: fileFilter
 });
 
