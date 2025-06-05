@@ -179,7 +179,7 @@
     </main>
 
     <footer class="bg-gray-100 border-t border-gray-200 mt-12">
-        <div class="container mx-auto px-6 py-8 text-center text-gray-600"><p>&copy; <span id="currentYear"></span> CWRU Marketplace. A student project.</p><p class="text-sm mt-1">This is an MVP for demonstration purposes.</p></div>
+        <div class="container mx-auto px-6 py-8 text-center text-gray-600"><p>&copy; <span id="currentYear"></span> Andrew Ke</p></div>
     </footer>
 
     <script>
@@ -240,6 +240,40 @@
             if (activePage) { activePage.classList.add('active-page'); activePage.classList.remove('hidden'); }
             window.scrollTo(0, 0);
         }
+
+        function formatTimeAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffInSeconds = Math.floor((now - date) / 1000);
+            const diffInMinutes = Math.floor(diffInSeconds / 60);
+            const diffInHours = Math.floor(diffInMinutes / 60);
+            const diffInDays = Math.floor(diffInHours / 24);
+            const diffInWeeks = Math.floor(diffInDays / 7);
+            const diffInMonths = Math.floor(diffInDays / 30);
+            const diffInYears = Math.floor(diffInDays / 365);
+
+            if (diffInSeconds < 60) return "Just now";
+            if (diffInMinutes === 1) return "1 minute ago";
+            if (diffInMinutes < 60) return `${diffInMinutes} minutes ago`;
+            if (diffInHours === 1) return "1 hour ago";
+            if (diffInHours < 24) return `${diffInHours} hours ago`;
+            if (diffInDays === 1) return "Yesterday";
+            if (diffInDays < 7) return `${diffInDays} days ago`;
+            if (diffInWeeks === 1) return "1 week ago";
+            if (diffInWeeks < 4) return `${diffInWeeks} weeks ago`;
+            if (diffInMonths === 1) return "1 month ago";
+            if (diffInMonths < 12) return `${diffInMonths} months ago`;
+            if (diffInYears === 1) return "1 year ago";
+            if (diffInYears > 1) return `${diffInYears} years ago`;
+
+            // Fallback to actual date for very old items
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        }
+
         function showMessage(message, type = 'info') {
             messageText.textContent = message;
             messageBox.classList.remove('hidden', 'bg-blue-500', 'bg-green-500', 'bg-red-500');
@@ -316,19 +350,11 @@
 
             let ownerActionsHtml = '';
             if (showOwnerActions) {
-                const archiveButtonText = item.isArchived ? 'Unarchive' : 'Archive';
-                const archiveButtonBaseClass = 'flex-1 text-white text-xs font-semibold py-1 px-2 rounded-md transition duration-150';
-                const archiveButtonColorClass = item.isArchived ? 'bg-sky-500 hover:bg-sky-600' : 'bg-slate-500 hover:bg-slate-600';
-                
-                const editButtonDisabled = item.isArchived;
-                const editButtonClass = `edit-item-btn flex-1 bg-yellow-400 hover:bg-yellow-500 text-white text-xs font-semibold py-1 px-2 rounded-md transition duration-150 ${editButtonDisabled ? 'opacity-50 cursor-not-allowed' : ''}`;
-
                 ownerActionsHtml = `
-                    <div class="mt-3 flex space-x-2">
-                        <button data-item-id="${item.id}" class="${editButtonClass}" ${editButtonDisabled ? 'disabled' : ''}>Edit</button>
-                        <button data-item-id="${item.id}" class="toggle-archive-btn ${archiveButtonBaseClass} ${archiveButtonColorClass}">${archiveButtonText}</button>
-                    </div>
-                `;
+                    <div class="flex gap-2 mt-3">
+                        ${!item.isArchived ? `<button class="edit-item-btn flex-1 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg shadow">Edit</button>` : ''}
+                        <button class="toggle-archive-btn flex-1 ${item.isArchived ? 'bg-sky-500 hover:bg-sky-600' : 'bg-slate-500 hover:bg-slate-600'} text-white font-semibold py-2 px-4 rounded-lg shadow">${item.isArchived ? 'Unarchive' : 'Archive'}</button>
+                    </div>`;
             }
 
             card.innerHTML = `
@@ -340,6 +366,7 @@
                     <h3 class="text-lg font-semibold text-gray-800 mb-2 truncate" title="${item.name}">${item.name}</h3>
                     <p class="text-2xl font-bold text-blue-600 mb-3">$${parseFloat(item.price).toFixed(2)}</p>
                     <p class="text-sm text-gray-600 mb-4 flex-grow clamp-lines-3" title="${item.description}">${item.description ? item.description.substring(0, 100) + (item.description.length > 100 ? '...' : '') : 'No description.'}</p>
+                    <p class="text-xs text-gray-500 mb-3">Posted ${formatTimeAgo(item.createdAt)}</p>
                     <button data-item-id="${item.id}" class="view-details-btn mt-auto w-full bg-slate-700 hover:bg-slate-800 text-white font-semibold py-2 px-4 rounded-lg transition duration-150">View Details</button>
                     ${ownerActionsHtml} 
                 </div>`;
@@ -381,7 +408,8 @@
                 if (searchTerm) params.append('search', searchTerm);
                 if (categoryTerm) params.append('category', categoryTerm);
                 if (params.toString()) query += `?${params.toString()}`;
-                const items = await fetchApi(query); // Backend now sends only active items
+                const response = await fetchApi(query); // Backend now sends only active items
+                const items = response.value || response; // Handle both array and {value: []} response formats
                 allItemsCache = items; 
                 renderItems(items);
             } catch (error) {
@@ -398,7 +426,8 @@
             if (!currentUser) { showMessage("Please log in to see your listings.", 'info'); showPage('loginRegisterPage'); return; }
             loadingIndicator.classList.remove('hidden');
             try {
-                const userItems = await fetchApi(`/items/user/${currentUser.id}`, 'GET', null, true);
+                const response = await fetchApi(`/items/user/${currentUser.id}`, 'GET', null, true);
+                const userItems = response.value || response; // Handle both array and {value: []} response formats
                 
                 const otherItemsFromCache = allItemsCache.filter(item => item.sellerId !== currentUser.id);
                 allItemsCache = otherItemsFromCache.concat(userItems);
@@ -433,7 +462,10 @@
             itemDetailLoadingIndicator.classList.remove('hidden');
             try {
                 let item = allItemsCache.find(i => i.id === parseInt(itemId));
-                if (!item) item = await fetchApi(`/items/${itemId}`);
+                if (!item) {
+                    const response = await fetchApi(`/items/${itemId}`);
+                    item = response.value || response; // Handle both object and {value: object} response formats
+                }
                 
                 if (item) {
                     if (!allItemsCache.find(i => i.id === item.id)) allItemsCache.push(item);
@@ -446,7 +478,8 @@
                         <div class="${item.isArchived ? 'opacity-60' : ''}"><img src="${displayImageUrl}" alt="${item.name}" class="w-full h-auto object-cover rounded-lg shadow-md" onerror="this.onerror=null;this.src='https://placehold.co/600x400/cccccc/999999?text=Image+Error';"></div>
                         <div>
                             <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-3">${item.name}</h1>
-                            <p class="text-3xl text-blue-600 font-semibold mb-5">$${parseFloat(item.price).toFixed(2)}</p>
+                            <p class="text-3xl text-blue-600 font-semibold mb-2">$${parseFloat(item.price).toFixed(2)}</p>
+                            <p class="text-sm text-gray-500 mb-5">Posted ${formatTimeAgo(item.createdAt)}</p>
                             <div class="mb-6"><h3 class="text-lg font-semibold text-gray-700 mb-2">Description</h3><p class="text-gray-600 leading-relaxed">${item.description || 'No description provided.'}</p></div>
                             <div class="mb-6"><h3 class="text-lg font-semibold text-gray-700 mb-1">Category</h3><p class="text-gray-600">${item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : 'N/A'}</p></div>
                             <div class="mb-6"><h3 class="text-lg font-semibold text-gray-700 mb-1">Seller</h3><p class="text-gray-600">${item.sellerName || 'N/A'} (${item.sellerEmail || 'N/A'})</p></div>
