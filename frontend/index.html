@@ -43,161 +43,194 @@
 <body class="text-gray-800">
 
     <header class="bg-white shadow-md sticky top-0 z-50">
-        <nav class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap items-center justify-between">
-            <a href="#" id="logoLink" class="text-2xl font-bold text-blue-600">CWRU Marketplace</a>
-            <div class="w-full md:w-1/2 order-3 md:order-2 mt-4 md:mt-0 flex-grow md:flex-grow-0">
-                <div class="relative">
-                    <input type="search" id="searchInput" placeholder="Search for textbooks, furniture, etc..." class="w-full p-3 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500">
-                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                        <svg class="w-5 h-5 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/></svg>
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Left Section: Toggle, Logo, Search -->
+                <div class="flex items-center gap-4">
+                    <!-- Sidebar Toggle Button -->
+                    <button id="sidebarToggle" class="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 lg:hidden">
+                        <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                    <!-- Logo -->
+                    <a href="#" id="logoLink" class="text-xl md:text-2xl font-bold text-blue-600 whitespace-nowrap">CWRU Marketplace</a>
+                    <!-- Search Bar -->
+                    <div class="hidden md:block relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                            <svg class="w-5 h-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg>
+                        </span>
+                        <input id="searchInput" class="form-input block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-gray-50 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm" placeholder="Search..." type="search">
                     </div>
                 </div>
-            </div>
-            <div class="order-2 md:order-3 flex items-center space-x-2 sm:space-x-4">
-                <button id="homeLink" class="nav-link text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Home</button>
-                <button id="postItemLink" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium shadow hover:shadow-lg transition duration-150 hidden">Post Item</button>
-                <div id="authLinks"><button id="loginRegisterLink" class="nav-link text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Login/Register</button></div>
-                <div id="userLinks" class="hidden">
-                    <span id="welcomeUserName" class="text-gray-700 text-sm font-medium mr-2"></span>
-                    <button id="myListingsLink" class="nav-link text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">My Listings</button>
-                    <button id="logoutButton" class="text-red-500 hover:text-red-700 px-3 py-2 rounded-md text-sm font-medium">Logout</button>
+                <!-- Right Section: Actions -->
+                <div class="flex items-center">
+                    <div id="userActions" class="flex items-center ml-4 space-x-4">
+                        <div id="authLinks">
+                            <button id="loginRegisterLink" class="text-gray-800 hover:text-blue-600">Login/Register</button>
+                        </div>
+                        <div id="userLinks" class="hidden space-x-4">
+                            <button id="postItemLink" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded hidden">Post Item</button>
+                            <button id="myListingsLink" class="text-gray-800 hover:text-blue-600">My Listings</button>
+                            <button id="logoutButton" class="text-gray-800 hover:text-blue-600">Logout</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </nav>
     </header>
 
-    <main class="container mx-auto p-4 sm:p-6 lg:p-8">
-        <div id="messageBox" class="hidden fixed top-5 right-5 bg-blue-500 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm">
-            <p id="messageText"></p><button id="closeMessageButton" class="absolute top-1 right-2 text-xl font-bold">&times;</button>
+    <main class="container mx-auto p-4 sm:p-6 lg:p-8 flex flex-row gap-8">
+        <!-- Sidebar for Categories -->
+        <aside id="categorySidebar" class="w-64 flex-shrink-0 hidden lg:block">
+            <div class="sticky top-24 bg-white p-4 rounded-lg shadow-md">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Categories</h3>
+                <ul id="categoryList" class="space-y-2">
+                    <li><a href="#" data-category="" class="category-link block text-white bg-blue-600 p-2 rounded-md text-sm font-semibold">All Items</a></li>
+                    <li><a href="#" data-category="textbooks" class="category-link block text-gray-700 hover:bg-gray-100 hover:text-blue-700 p-2 rounded-md text-sm">Textbooks</a></li>
+                    <li><a href="#" data-category="furniture" class="category-link block text-gray-700 hover:bg-gray-100 hover:text-blue-700 p-2 rounded-md text-sm">Furniture</a></li>
+                    <li><a href="#" data-category="clothing" class="category-link block text-gray-700 hover:bg-gray-100 hover:text-blue-700 p-2 rounded-md text-sm">Clothing</a></li>
+                    <li><a href="#" data-category="electronics" class="category-link block text-gray-700 hover:bg-gray-100 hover:text-blue-700 p-2 rounded-md text-sm">Electronics</a></li>
+                    <li><a href="#" data-category="other" class="category-link block text-gray-700 hover:bg-gray-100 hover:text-blue-700 p-2 rounded-md text-sm">Other</a></li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="flex-1">
+            <div id="messageBox" class="hidden fixed top-5 right-5 bg-blue-500 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm">
+                <p id="messageText"></p>
+                <button id="closeMessageButton" class="absolute top-1 right-2 text-xl font-bold">&times;</button>
+            </div>
+
+            <section id="homePage" class="page-section active-page">
+                <h1 class="text-3xl font-bold mb-8 text-center text-gray-700">Recent Listings</h1>
+                <div id="itemGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+                <div id="noResultsMessage" class="hidden text-center text-gray-500 mt-10"><p class="text-xl">No items found.</p></div>
+                <div id="loadingIndicator" class="hidden text-center text-blue-500 mt-10"><p class="text-xl">Loading items...</p></div>
+            </section>
+
+            <section id="loginRegisterPage" class="page-section">
+                <div class="max-w-md mx-auto bg-white p-8 rounded-xl shadow-lg">
+                    <h1 class="text-3xl font-bold mb-8 text-center text-gray-700">Welcome!</h1>
+                    <div class="mb-6 border-b border-gray-200">
+                        <nav class="flex space-x-4" aria-label="Tabs">
+                            <button id="loginTabButton" class="tab-button text-blue-600 border-b-2 border-blue-600 py-3 px-1 text-center font-medium text-lg" aria-current="page">Login</button>
+                            <button id="registerTabButton" class="tab-button text-gray-500 hover:text-gray-700 hover:border-gray-300 py-3 px-1 text-center font-medium text-lg">Register</button>
+                        </nav>
+                    </div>
+                    <form id="loginForm" class="space-y-6">
+                        <div><label for="loginEmail" class="block text-sm font-medium text-gray-700">Email address</label><input type="email" id="loginEmail" name="email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="you@case.edu"></div>
+                        <div><label for="loginPassword" class="block text-sm font-medium text-gray-700">Password</label><input type="password" id="loginPassword" name="password" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="••••••••"></div>
+                        <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Sign in</button>
+                    </form>
+                    <form id="registerForm" class="space-y-6 hidden">
+                        <div><label for="registerFullName" class="block text-sm font-medium text-gray-700">Full Name</label><input type="text" id="registerFullName" name="fullName" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="John Doe"></div>
+                        <div><label for="registerEmail" class="block text-sm font-medium text-gray-700">CWRU Email address (.edu)</label><input type="email" id="registerEmail" name="email" required pattern=".+@case\.edu" title="Please use your CWRU email address (e.g., xyz123@case.edu)" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="xyz123@case.edu"><p class="mt-1 text-xs text-gray-500">Must be a valid @case.edu email.</p></div>
+                        <div><label for="registerPassword" class="block text-sm font-medium text-gray-700">Password</label><input type="password" id="registerPassword" name="password" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Choose a strong password"></div>
+                        <div><label for="registerConfirmPassword" class="block text-sm font-medium text-gray-700">Confirm Password</label><input type="password" id="registerConfirmPassword" name="confirmPassword" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Confirm your password"></div>
+                        <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">Create Account</button>
+                    </form>
+                </div>
+            </section>
+
+            <section id="postItemPage" class="page-section">
+                <div class="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-lg">
+                    <h1 class="text-3xl font-bold mb-8 text-center text-gray-700">Create New Listing</h1>
+                    <form id="postItemForm" class="space-y-6">
+                        <div><label for="itemName" class="block text-sm font-medium text-gray-700">Item Name</label><input type="text" id="itemName" name="itemName" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Organic Chemistry Textbook"></div>
+                        <div>
+                            <label for="itemCondition" class="block text-sm font-medium text-gray-700">Condition</label>
+                            <select id="itemCondition" name="itemCondition" required class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                <option value="" disabled selected>Select a condition</option>
+                                <option value="New">New (sealed, with tags)</option>
+                                <option value="Like New">Like New (used once, no signs of wear)</option>
+                                <option value="Excellent">Excellent (lightly used, minor cosmetic flaws)</option>
+                                <option value="Good">Good (used, some signs of wear)</option>
+                                <option value="Fair">Fair (heavily used, functional)</option>
+                            </select>
+                        </div>
+                        <div><label for="itemDescription" class="block text-sm font-medium text-gray-700">Description</label><textarea id="itemDescription" name="itemDescription" rows="4" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Include condition, edition, etc."></textarea></div>
+                        <div><label for="itemPrice" class="block text-sm font-medium text-gray-700">Price ($)</label><input type="number" id="itemPrice" name="itemPrice" step="0.01" min="0" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., 45.00"></div>
+                        <div><label for="itemCategory" class="block text-sm font-medium text-gray-700">Category</label><select id="itemCategory" name="itemCategory" required class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"><option value="">Select a category</option><option value="textbooks">Textbooks</option><option value="furniture">Furniture</option><option value="clothing">Clothing</option><option value="electronics">Electronics</option><option value="other">Other</option></select></div>
+                        <div>
+                            <label for="itemImageFile" class="block text-sm font-medium text-gray-700">Upload Image (Optional)</label>
+                            <input type="file" id="itemImageFile" name="itemImageFile" accept="image/jpeg,image/png,image/gif" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                            <img id="imagePreview" src="#" alt="Image Preview" class="hidden"/>
+                            <p class="mt-1 text-xs text-gray-500">Max 5MB. Accepted: JPG, PNG, GIF.</p>
+                        </div>
+                        <div>
+                            <label for="itemImageUrl" class="block text-sm font-medium text-gray-700">Or Enter Image URL (Optional)</label>
+                            <input type="url" id="itemImageUrl" name="itemImageUrl" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="https://example.com/image.jpg">
+                            <p class="mt-1 text-xs text-gray-500">If you upload an image, this URL will be ignored.</p>
+                        </div>
+                        <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Post Item</button>
+                    </form>
+                </div>
+            </section>
+
+            <section id="editItemPage" class="page-section">
+                <div class="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-lg">
+                    <h1 class="text-3xl font-bold mb-8 text-center text-gray-700">Edit Your Listing</h1>
+                    <form id="editItemForm" class="space-y-6">
+                        <input type="hidden" id="editItemId" name="editItemId"> 
+                        <div><label for="editItemName" class="block text-sm font-medium text-gray-700">Item Name</label><input type="text" id="editItemName" name="itemName" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
+                        <div>
+                            <label for="editItemCondition" class="block text-sm font-medium text-gray-700">Condition</label>
+                            <select id="editItemCondition" name="itemCondition" required class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                <option value="" disabled>Select a condition</option>
+                                <option value="New">New (sealed, with tags)</option>
+                                <option value="Like New">Like New (used once, no signs of wear)</option>
+                                <option value="Excellent">Excellent (lightly used, minor cosmetic flaws)</option>
+                                <option value="Good">Good (used, some signs of wear)</option>
+                                <option value="Fair">Fair (heavily used, functional)</option>
+                            </select>
+                        </div>
+                        <div><label for="editItemDescription" class="block text-sm font-medium text-gray-700">Description</label><textarea id="editItemDescription" name="itemDescription" rows="4" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea></div>
+                        <div><label for="editItemPrice" class="block text-sm font-medium text-gray-700">Price ($)</label><input type="number" id="editItemPrice" name="itemPrice" step="0.01" min="0" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
+                        <div><label for="editItemCategory" class="block text-sm font-medium text-gray-700">Category</label><select id="editItemCategory" name="itemCategory" required class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"><option value="">Select a category</option><option value="textbooks">Textbooks</option><option value="furniture">Furniture</option><option value="clothing">Clothing</option><option value="electronics">Electronics</option><option value="other">Other</option></select></div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Current Image:</label>
+                            <img id="editCurrentImagePreview" src="#" alt="Current Item Image" class="my-2 max-h-40 rounded border"/>
+                        </div>
+                        <div>
+                            <label for="editItemImageFile" class="block text-sm font-medium text-gray-700">Upload New Image (Optional)</label>
+                            <input type="file" id="editItemImageFile" name="itemImageFile" accept="image/jpeg,image/png,image/gif" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                            <img id="editImagePreview" src="#" alt="New Image Preview" class="hidden"/>
+                            <p class="mt-1 text-xs text-gray-500">Max 5MB. Replaces current image if selected.</p>
+                        </div>
+                        <div>
+                            <label for="editItemImageUrl" class="block text-sm font-medium text-gray-700">Or Enter New Image URL (Optional)</label>
+                            <input type="url" id="editItemImageUrl" name="itemImageUrl" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="https://example.com/new_image.jpg">
+                            <p class="mt-1 text-xs text-gray-500">Replaces current image. If both uploaded and URL provided, upload takes precedence. Leave blank to keep current image or if uploading.</p>
+                        </div>
+                        <div class="flex space-x-4">
+                            <button type="submit" class="flex-1 w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">Save Changes</button>
+                            <button type="button" id="cancelEditButton" class="flex-1 w-full flex justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <section id="itemDetailsPage" class="page-section">
+                <div class="max-w-4xl mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-lg">
+                    <button id="backToHomeFromDetails" class="mb-6 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"><svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>Back to listings</button>
+                    <div id="itemDetailContent" class="grid grid-cols-1 md:grid-cols-2 gap-8"></div>
+                    <div id="itemDetailStatus" class="mt-4 text-center"></div>
+                    <div id="itemDetailOwnerActions" class="mt-6 hidden"> 
+                         <button id="editItemDetailButton" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg shadow mr-2">Edit Item</button>
+                         <button id="archiveItemDetailButton" class="bg-slate-500 hover:bg-slate-600 text-white font-semibold py-2 px-4 rounded-lg shadow">Archive Item</button> 
+                    </div>
+                    <div id="itemDetailLoadingIndicator" class="hidden text-center text-blue-500 mt-10"><p class="text-xl">Loading item details...</p></div>
+                </div>
+            </section>
+
+            <section id="myListingsPage" class="page-section">
+                <h1 class="text-3xl font-bold mb-8 text-center text-gray-700">My Listings</h1>
+                <div id="myListingsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+                <div id="noMyListingsMessage" class="hidden text-center text-gray-500 mt-10"><p class="text-xl">You haven't posted any items yet.</p><button id="postFirstItemLink" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow">Post Your First Item</button></div>
+            </section>
         </div>
-
-        <section id="homePage" class="page-section active-page">
-            <h1 class="text-3xl font-bold mb-8 text-center text-gray-700">Recent Listings</h1>
-            <div id="itemGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
-            <div id="noResultsMessage" class="hidden text-center text-gray-500 mt-10"><p class="text-xl">No items found.</p></div>
-            <div id="loadingIndicator" class="hidden text-center text-blue-500 mt-10"><p class="text-xl">Loading items...</p></div>
-        </section>
-
-        <section id="loginRegisterPage" class="page-section">
-            <div class="max-w-md mx-auto bg-white p-8 rounded-xl shadow-lg">
-                <h1 class="text-3xl font-bold mb-8 text-center text-gray-700">Welcome!</h1>
-                <div class="mb-6 border-b border-gray-200">
-                    <nav class="flex space-x-4" aria-label="Tabs">
-                        <button id="loginTabButton" class="tab-button text-blue-600 border-b-2 border-blue-600 py-3 px-1 text-center font-medium text-lg" aria-current="page">Login</button>
-                        <button id="registerTabButton" class="tab-button text-gray-500 hover:text-gray-700 hover:border-gray-300 py-3 px-1 text-center font-medium text-lg">Register</button>
-                    </nav>
-                </div>
-                <form id="loginForm" class="space-y-6">
-                    <div><label for="loginEmail" class="block text-sm font-medium text-gray-700">Email address</label><input type="email" id="loginEmail" name="email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="you@case.edu"></div>
-                    <div><label for="loginPassword" class="block text-sm font-medium text-gray-700">Password</label><input type="password" id="loginPassword" name="password" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="••••••••"></div>
-                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Sign in</button>
-                </form>
-                <form id="registerForm" class="space-y-6 hidden">
-                    <div><label for="registerFullName" class="block text-sm font-medium text-gray-700">Full Name</label><input type="text" id="registerFullName" name="fullName" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="John Doe"></div>
-                    <div><label for="registerEmail" class="block text-sm font-medium text-gray-700">CWRU Email address (.edu)</label><input type="email" id="registerEmail" name="email" required pattern=".+@case\.edu" title="Please use your CWRU email address (e.g., xyz123@case.edu)" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="xyz123@case.edu"><p class="mt-1 text-xs text-gray-500">Must be a valid @case.edu email.</p></div>
-                    <div><label for="registerPassword" class="block text-sm font-medium text-gray-700">Password</label><input type="password" id="registerPassword" name="password" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Choose a strong password"></div>
-                    <div><label for="registerConfirmPassword" class="block text-sm font-medium text-gray-700">Confirm Password</label><input type="password" id="registerConfirmPassword" name="confirmPassword" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Confirm your password"></div>
-                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">Create Account</button>
-                </form>
-            </div>
-        </section>
-
-        <section id="postItemPage" class="page-section">
-            <div class="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-lg">
-                <h1 class="text-3xl font-bold mb-8 text-center text-gray-700">Create New Listing</h1>
-                <form id="postItemForm" class="space-y-6">
-                    <div><label for="itemName" class="block text-sm font-medium text-gray-700">Item Name</label><input type="text" id="itemName" name="itemName" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Organic Chemistry Textbook"></div>
-                    <div>
-                        <label for="itemCondition" class="block text-sm font-medium text-gray-700">Condition</label>
-                        <select id="itemCondition" name="itemCondition" required class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                            <option value="" disabled selected>Select a condition</option>
-                            <option value="New">New (sealed, with tags)</option>
-                            <option value="Like New">Like New (used once, no signs of wear)</option>
-                            <option value="Excellent">Excellent (lightly used, minor cosmetic flaws)</option>
-                            <option value="Good">Good (used, some signs of wear)</option>
-                            <option value="Fair">Fair (heavily used, functional)</option>
-                        </select>
-                    </div>
-                    <div><label for="itemDescription" class="block text-sm font-medium text-gray-700">Description</label><textarea id="itemDescription" name="itemDescription" rows="4" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Include condition, edition, etc."></textarea></div>
-                    <div><label for="itemPrice" class="block text-sm font-medium text-gray-700">Price ($)</label><input type="number" id="itemPrice" name="itemPrice" step="0.01" min="0" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., 45.00"></div>
-                    <div><label for="itemCategory" class="block text-sm font-medium text-gray-700">Category</label><select id="itemCategory" name="itemCategory" required class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"><option value="">Select a category</option><option value="textbooks">Textbooks</option><option value="furniture">Furniture</option><option value="clothing">Clothing</option><option value="electronics">Electronics</option><option value="other">Other</option></select></div>
-                    <div>
-                        <label for="itemImageFile" class="block text-sm font-medium text-gray-700">Upload Image (Optional)</label>
-                        <input type="file" id="itemImageFile" name="itemImageFile" accept="image/jpeg,image/png,image/gif" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                        <img id="imagePreview" src="#" alt="Image Preview" class="hidden"/>
-                        <p class="mt-1 text-xs text-gray-500">Max 5MB. Accepted: JPG, PNG, GIF.</p>
-                    </div>
-                    <div>
-                        <label for="itemImageUrl" class="block text-sm font-medium text-gray-700">Or Enter Image URL (Optional)</label>
-                        <input type="url" id="itemImageUrl" name="itemImageUrl" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="https://example.com/image.jpg">
-                        <p class="mt-1 text-xs text-gray-500">If you upload an image, this URL will be ignored.</p>
-                    </div>
-                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Post Item</button>
-                </form>
-            </div>
-        </section>
-
-        <section id="editItemPage" class="page-section">
-            <div class="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-lg">
-                <h1 class="text-3xl font-bold mb-8 text-center text-gray-700">Edit Your Listing</h1>
-                <form id="editItemForm" class="space-y-6">
-                    <input type="hidden" id="editItemId" name="editItemId"> 
-                    <div><label for="editItemName" class="block text-sm font-medium text-gray-700">Item Name</label><input type="text" id="editItemName" name="itemName" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
-                    <div>
-                        <label for="editItemCondition" class="block text-sm font-medium text-gray-700">Condition</label>
-                        <select id="editItemCondition" name="itemCondition" required class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                            <option value="" disabled>Select a condition</option>
-                            <option value="New">New (sealed, with tags)</option>
-                            <option value="Like New">Like New (used once, no signs of wear)</option>
-                            <option value="Excellent">Excellent (lightly used, minor cosmetic flaws)</option>
-                            <option value="Good">Good (used, some signs of wear)</option>
-                            <option value="Fair">Fair (heavily used, functional)</option>
-                        </select>
-                    </div>
-                    <div><label for="editItemDescription" class="block text-sm font-medium text-gray-700">Description</label><textarea id="editItemDescription" name="itemDescription" rows="4" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea></div>
-                    <div><label for="editItemPrice" class="block text-sm font-medium text-gray-700">Price ($)</label><input type="number" id="editItemPrice" name="itemPrice" step="0.01" min="0" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
-                    <div><label for="editItemCategory" class="block text-sm font-medium text-gray-700">Category</label><select id="editItemCategory" name="itemCategory" required class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"><option value="">Select a category</option><option value="textbooks">Textbooks</option><option value="furniture">Furniture</option><option value="clothing">Clothing</option><option value="electronics">Electronics</option><option value="other">Other</option></select></div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Current Image:</label>
-                        <img id="editCurrentImagePreview" src="#" alt="Current Item Image" class="my-2 max-h-40 rounded border"/>
-                    </div>
-                    <div>
-                        <label for="editItemImageFile" class="block text-sm font-medium text-gray-700">Upload New Image (Optional)</label>
-                        <input type="file" id="editItemImageFile" name="itemImageFile" accept="image/jpeg,image/png,image/gif" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                        <img id="editImagePreview" src="#" alt="New Image Preview" class="hidden"/>
-                        <p class="mt-1 text-xs text-gray-500">Max 5MB. Replaces current image if selected.</p>
-                    </div>
-                    <div>
-                        <label for="editItemImageUrl" class="block text-sm font-medium text-gray-700">Or Enter New Image URL (Optional)</label>
-                        <input type="url" id="editItemImageUrl" name="itemImageUrl" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="https://example.com/new_image.jpg">
-                        <p class="mt-1 text-xs text-gray-500">Replaces current image. If both uploaded and URL provided, upload takes precedence. Leave blank to keep current image or if uploading.</p>
-                    </div>
-                    <div class="flex space-x-4">
-                        <button type="submit" class="flex-1 w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">Save Changes</button>
-                        <button type="button" id="cancelEditButton" class="flex-1 w-full flex justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Cancel</button>
-                    </div>
-                </form>
-            </div>
-        </section>
-
-        <section id="itemDetailsPage" class="page-section">
-            <div class="max-w-4xl mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-lg">
-                <button id="backToHomeFromDetails" class="mb-6 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"><svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>Back to listings</button>
-                <div id="itemDetailContent" class="grid grid-cols-1 md:grid-cols-2 gap-8"></div>
-                <div id="itemDetailStatus" class="mt-4 text-center"></div>
-                <div id="itemDetailOwnerActions" class="mt-6 hidden"> 
-                     <button id="editItemDetailButton" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg shadow mr-2">Edit Item</button>
-                     <button id="archiveItemDetailButton" class="bg-slate-500 hover:bg-slate-600 text-white font-semibold py-2 px-4 rounded-lg shadow">Archive Item</button> 
-                </div>
-                <div id="itemDetailLoadingIndicator" class="hidden text-center text-blue-500 mt-10"><p class="text-xl">Loading item details...</p></div>
-            </div>
-        </section>
-
-        <section id="myListingsPage" class="page-section">
-            <h1 class="text-3xl font-bold mb-8 text-center text-gray-700">My Listings</h1>
-            <div id="myListingsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
-            <div id="noMyListingsMessage" class="hidden text-center text-gray-500 mt-10"><p class="text-xl">You haven't posted any items yet.</p><button id="postFirstItemLink" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow">Post Your First Item</button></div>
-        </section>
     </main>
 
     <footer class="bg-gray-100 border-t border-gray-200 mt-12">
@@ -388,8 +421,6 @@
                 <div class="p-5 flex flex-col flex-grow">
                     <h3 class="text-lg font-semibold text-gray-800 mb-2 truncate" title="${item.name}">${item.name}</h3>
                     <p class="text-2xl font-bold text-blue-600 mb-2">$${parseFloat(item.price).toFixed(2)}</p>
-                    <p class="text-xs font-medium text-gray-700 mb-3">Condition: <span class="font-semibold">${item.condition}</span></p>
-                    <p class="text-sm text-gray-600 mb-4 flex-grow clamp-lines-3" title="${item.description}">${item.description ? item.description.substring(0, 100) + (item.description.length > 100 ? '...' : '') : 'No description.'}</p>
                     <p class="text-xs text-gray-500 mb-3">Posted ${formatTimeAgo(item.createdAt)}</p>
                     <button data-item-id="${item.id}" class="view-details-btn mt-auto w-full bg-slate-700 hover:bg-slate-800 text-white font-semibold py-2 px-4 rounded-lg transition duration-150">View Details</button>
                     ${ownerActionsHtml} 
@@ -432,9 +463,9 @@
                 if (searchTerm) params.append('search', searchTerm);
                 if (categoryTerm) params.append('category', categoryTerm);
                 if (params.toString()) query += `?${params.toString()}`;
-                const response = await fetchApi(query); // Backend now sends only active items
-                const items = response.value || response; // Handle both array and {value: []} response formats
-                allItemsCache = items; 
+                const response = await fetchApi(query);
+                const items = response.value || response;
+                allItemsCache = items;
                 renderItems(items);
             } catch (error) {
                 noResultsMessage.classList.remove('hidden');
@@ -504,8 +535,14 @@
                             <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-3">${item.name}</h1>
                             <p class="text-3xl text-blue-600 font-semibold mb-2">$${parseFloat(item.price).toFixed(2)}</p>
                             <p class="text-sm text-gray-500 mb-5">Posted ${formatTimeAgo(item.createdAt)}</p>
-                            <div class="mb-6"><h3 class="text-lg font-semibold text-gray-700 mb-2">Description</h3><p class="text-gray-600 leading-relaxed">${item.description || 'No description provided.'}</p></div>
-                            <div class="mb-6"><h3 class="text-lg font-semibold text-gray-700 mb-1">Condition</h3><p class="text-gray-600">${item.condition}</p></div>
+                            <div class="mb-6 bg-gray-50 p-4 rounded-lg">
+                                <h3 class="text-lg font-semibold text-gray-700 mb-2">Item Condition</h3>
+                                <p class="text-gray-800 font-medium text-lg">${item.condition}</p>
+                            </div>
+                            <div class="mb-6 bg-gray-50 p-4 rounded-lg">
+                                <h3 class="text-lg font-semibold text-gray-700 mb-2">Description</h3>
+                                <p class="text-gray-800 leading-relaxed">${item.description || 'No description provided.'}</p>
+                            </div>
                             <div class="mb-6"><h3 class="text-lg font-semibold text-gray-700 mb-1">Category</h3><p class="text-gray-600">${item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : 'N/A'}</p></div>
                             <div class="mb-6"><h3 class="text-lg font-semibold text-gray-700 mb-1">Seller</h3><p class="text-gray-600">${item.sellerName || 'N/A'} (${item.sellerEmail || 'N/A'})</p></div>
                             <button class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg shadow hover:shadow-lg transition duration-150 contact-seller-btn ${item.isArchived ? 'opacity-50 cursor-not-allowed' : ''}" ${item.isArchived ? 'disabled' : ''}>Contact Seller (Feature Coming Soon)</button>
@@ -543,11 +580,6 @@
         }
         
         // --- Auth Form Logic ---
-        loginTabButton.addEventListener('click', () => { /* ... same ... */ });
-        registerTabButton.addEventListener('click', () => { /* ... same ... */ });
-        loginForm.addEventListener('submit', async (e) => { /* ... same ... */ });
-        registerForm.addEventListener('submit', async (e) => { /* ... same ... */ });
-        // (Ensure full auth logic is present from previous versions)
         loginTabButton.addEventListener('click', () => {
             loginForm.classList.remove('hidden'); registerForm.classList.add('hidden');
             loginTabButton.classList.add('text-blue-600', 'border-blue-600');
@@ -564,15 +596,22 @@
         });
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = loginForm.loginEmail.value; const password = loginForm.loginPassword.value;
+            const email = loginForm.querySelector('#loginEmail').value;
+            const password = loginForm.querySelector('#loginPassword').value;
             try {
                 const data = await fetchApi('/auth/login', 'POST', { email, password });
                 if (data.token && data.user) {
                     storeAuthData(data.user, data.token);
                     showMessage(`Successfully logged in as ${data.user.fullName}!`, 'success');
-                    updateNav(); showPage('homePage'); loadAndRenderItems(); 
-                } else { showMessage(data.message || "Login failed. Please check credentials.", 'error'); }
-            } catch (error) { /* Handled by fetchApi */ }
+                    updateNav();
+                    showPage('homePage');
+                    loadAndRenderItems();
+                } else {
+                    showMessage(data.message || "Login failed. Please check credentials.", 'error');
+                }
+            } catch (error) {
+                // Error is handled by fetchApi
+            }
             loginForm.reset();
         });
         registerForm.addEventListener('submit', async (e) => {
@@ -730,12 +769,39 @@
         }
         
         // --- Navigation & Initial Load ---
-        document.getElementById('logoLink').addEventListener('click', (e) => { e.preventDefault(); showPage('homePage'); loadAndRenderItems(); });
-        document.getElementById('homeLink').addEventListener('click', () => { showPage('homePage'); loadAndRenderItems(); });
-        document.getElementById('postItemLink').addEventListener('click', () => { if (currentUser) showPage('postItemPage'); else { showMessage("Please log in to post an item.", 'info'); showPage('loginRegisterPage'); } });
-        document.getElementById('loginRegisterLink').addEventListener('click', () => showPage('loginRegisterPage'));
-        document.getElementById('logoutButton').addEventListener('click', () => { clearAuthData(); updateNav(); showMessage("Logged out successfully.", 'info'); showPage('homePage'); loadAndRenderItems(); });
-        document.getElementById('myListingsLink').addEventListener('click', () => { if (currentUser) { showPage('myListingsPage'); renderMyListings(); } else { showMessage("Please log in to see your listings.", 'info'); showPage('loginRegisterPage'); } });
+        document.getElementById('logoLink').addEventListener('click', (e) => { 
+            e.preventDefault(); 
+            showPage('homePage'); 
+            loadAndRenderItems(); 
+        });
+        document.getElementById('loginRegisterLink').addEventListener('click', (e) => { 
+            e.preventDefault();
+            showPage('loginRegisterPage');
+        });
+        document.getElementById('postItemLink').addEventListener('click', () => { 
+            if (currentUser) {
+                showPage('postItemPage');
+            } else { 
+                showMessage("Please log in to post an item.", 'info'); 
+                showPage('loginRegisterPage'); 
+            } 
+        });
+        document.getElementById('logoutButton').addEventListener('click', () => { 
+            clearAuthData(); 
+            updateNav(); 
+            showMessage("Logged out successfully.", 'info'); 
+            showPage('homePage'); 
+            loadAndRenderItems(); 
+        });
+        document.getElementById('myListingsLink').addEventListener('click', () => { 
+            if (currentUser) { 
+                showPage('myListingsPage'); 
+                renderMyListings(); 
+            } else { 
+                showMessage("Please log in to see your listings.", 'info'); 
+                showPage('loginRegisterPage'); 
+            } 
+        });
         document.getElementById('postFirstItemLink').addEventListener('click', () => showPage('postItemPage'));
         document.getElementById('backToHomeFromDetails').addEventListener('click', () => { showPage('homePage'); });
 
@@ -750,6 +816,82 @@
         loadAndRenderItems(); 
         showPage('homePage');
 
+        // --- Sidebar and Category Logic ---
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const categorySidebar = document.getElementById('categorySidebar');
+        const categoryList = document.getElementById('categoryList');
+        let currentCategory = '';
+
+        // Toggle sidebar on mobile
+        sidebarToggle?.addEventListener('click', () => {
+            categorySidebar.classList.toggle('hidden');
+        });
+
+        // Handle category selection
+        categoryList?.addEventListener('click', (e) => {
+            e.preventDefault();
+            const categoryLink = e.target.closest('.category-link');
+            if (!categoryLink) return;
+
+            // Update active state
+            document.querySelectorAll('.category-link').forEach(link => {
+                link.classList.remove('text-white', 'bg-blue-600');
+                link.classList.add('text-gray-700', 'hover:bg-gray-100', 'hover:text-blue-700');
+            });
+            categoryLink.classList.remove('text-gray-700', 'hover:bg-gray-100', 'hover:text-blue-700');
+            categoryLink.classList.add('text-white', 'bg-blue-600');
+
+            // Get category and load items
+            const category = categoryLink.dataset.category;
+            currentCategory = category;
+            loadAndRenderItems('', category);
+
+            // Hide sidebar on mobile after selection
+            if (window.innerWidth < 1024) {
+                categorySidebar.classList.add('hidden');
+            }
+        });
+
+        // Update loadAndRenderItems to handle category filtering
+        async function loadAndRenderItems(searchTerm = '', categoryTerm = '') {
+            loadingIndicator.classList.remove('hidden');
+            noResultsMessage.classList.add('hidden');
+            itemGrid.innerHTML = '';
+            try {
+                let query = '/items';
+                const params = new URLSearchParams();
+                if (searchTerm) params.append('search', searchTerm);
+                if (categoryTerm) params.append('category', categoryTerm);
+                if (params.toString()) query += `?${params.toString()}`;
+                const response = await fetchApi(query);
+                const items = response.value || response;
+                allItemsCache = items;
+                renderItems(items);
+            } catch (error) {
+                noResultsMessage.classList.remove('hidden');
+                noResultsMessage.querySelector('p').textContent = "Could not load items. Please try again.";
+            } finally {
+                loadingIndicator.classList.add('hidden');
+            }
+        }
+
+        // Handle search with category persistence
+        searchInput.addEventListener('input', debounce(() => {
+            loadAndRenderItems(searchInput.value.toLowerCase(), currentCategory);
+        }, 300));
+
+        // Debounce helper function
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
     </script>
 </body>
 </html>
