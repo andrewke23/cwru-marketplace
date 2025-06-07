@@ -6,7 +6,7 @@ const Item = require('../models/Item');
 // Create a new item
 const createItem = async (req, res) => {
     try {
-        const { name, description, price, category } = req.body;
+        const { name, description, price, category, condition } = req.body;
         let imageUrl = req.body.imageUrl;
 
         // If a file was uploaded, use its path
@@ -19,6 +19,7 @@ const createItem = async (req, res) => {
             description,
             price: parseFloat(price),
             category,
+            condition,
             imageUrl,
             sellerId: req.user.id,
             sellerEmail: req.user.email,
@@ -92,7 +93,7 @@ const getItemsByUserId = async (req, res) => {
 // Update item
 const updateItem = async (req, res) => {
     try {
-        const { name, description, price, category } = req.body;
+        const { name, description, price, category, condition } = req.body;
         let imageUrl = req.body.imageUrl;
 
         const item = await Item.findById(req.params.itemId);
@@ -110,6 +111,7 @@ const updateItem = async (req, res) => {
         item.description = description;
         item.price = parseFloat(price);
         item.category = category;
+        item.condition = condition;
 
         // Only update image if a new file is uploaded or a new URL is explicitly provided
         if (req.file) {

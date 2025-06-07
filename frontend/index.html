@@ -107,6 +107,17 @@
                 <h1 class="text-3xl font-bold mb-8 text-center text-gray-700">Create New Listing</h1>
                 <form id="postItemForm" class="space-y-6">
                     <div><label for="itemName" class="block text-sm font-medium text-gray-700">Item Name</label><input type="text" id="itemName" name="itemName" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Organic Chemistry Textbook"></div>
+                    <div>
+                        <label for="itemCondition" class="block text-sm font-medium text-gray-700">Condition</label>
+                        <select id="itemCondition" name="itemCondition" required class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <option value="" disabled selected>Select a condition</option>
+                            <option value="New">New (sealed, with tags)</option>
+                            <option value="Like New">Like New (used once, no signs of wear)</option>
+                            <option value="Excellent">Excellent (lightly used, minor cosmetic flaws)</option>
+                            <option value="Good">Good (used, some signs of wear)</option>
+                            <option value="Fair">Fair (heavily used, functional)</option>
+                        </select>
+                    </div>
                     <div><label for="itemDescription" class="block text-sm font-medium text-gray-700">Description</label><textarea id="itemDescription" name="itemDescription" rows="4" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Include condition, edition, etc."></textarea></div>
                     <div><label for="itemPrice" class="block text-sm font-medium text-gray-700">Price ($)</label><input type="number" id="itemPrice" name="itemPrice" step="0.01" min="0" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., 45.00"></div>
                     <div><label for="itemCategory" class="block text-sm font-medium text-gray-700">Category</label><select id="itemCategory" name="itemCategory" required class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"><option value="">Select a category</option><option value="textbooks">Textbooks</option><option value="furniture">Furniture</option><option value="clothing">Clothing</option><option value="electronics">Electronics</option><option value="other">Other</option></select></div>
@@ -132,6 +143,17 @@
                 <form id="editItemForm" class="space-y-6">
                     <input type="hidden" id="editItemId" name="editItemId"> 
                     <div><label for="editItemName" class="block text-sm font-medium text-gray-700">Item Name</label><input type="text" id="editItemName" name="itemName" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
+                    <div>
+                        <label for="editItemCondition" class="block text-sm font-medium text-gray-700">Condition</label>
+                        <select id="editItemCondition" name="itemCondition" required class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <option value="" disabled>Select a condition</option>
+                            <option value="New">New (sealed, with tags)</option>
+                            <option value="Like New">Like New (used once, no signs of wear)</option>
+                            <option value="Excellent">Excellent (lightly used, minor cosmetic flaws)</option>
+                            <option value="Good">Good (used, some signs of wear)</option>
+                            <option value="Fair">Fair (heavily used, functional)</option>
+                        </select>
+                    </div>
                     <div><label for="editItemDescription" class="block text-sm font-medium text-gray-700">Description</label><textarea id="editItemDescription" name="itemDescription" rows="4" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea></div>
                     <div><label for="editItemPrice" class="block text-sm font-medium text-gray-700">Price ($)</label><input type="number" id="editItemPrice" name="itemPrice" step="0.01" min="0" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
                     <div><label for="editItemCategory" class="block text-sm font-medium text-gray-700">Category</label><select id="editItemCategory" name="itemCategory" required class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"><option value="">Select a category</option><option value="textbooks">Textbooks</option><option value="furniture">Furniture</option><option value="clothing">Clothing</option><option value="electronics">Electronics</option><option value="other">Other</option></select></div>
@@ -213,6 +235,7 @@
         const editItemDescriptionInput = document.getElementById('editItemDescription');
         const editItemPriceInput = document.getElementById('editItemPrice');
         const editItemCategoryInput = document.getElementById('editItemCategory');
+        const editItemConditionInput = document.getElementById('editItemCondition');
         const editCurrentImagePreview = document.getElementById('editCurrentImagePreview');
         const editItemImageFileInput = document.getElementById('editItemImageFile');
         const editItemImageUrlInput = document.getElementById('editItemImageUrl');
@@ -364,7 +387,8 @@
                 </div>
                 <div class="p-5 flex flex-col flex-grow">
                     <h3 class="text-lg font-semibold text-gray-800 mb-2 truncate" title="${item.name}">${item.name}</h3>
-                    <p class="text-2xl font-bold text-blue-600 mb-3">$${parseFloat(item.price).toFixed(2)}</p>
+                    <p class="text-2xl font-bold text-blue-600 mb-2">$${parseFloat(item.price).toFixed(2)}</p>
+                    <p class="text-xs font-medium text-gray-700 mb-3">Condition: <span class="font-semibold">${item.condition}</span></p>
                     <p class="text-sm text-gray-600 mb-4 flex-grow clamp-lines-3" title="${item.description}">${item.description ? item.description.substring(0, 100) + (item.description.length > 100 ? '...' : '') : 'No description.'}</p>
                     <p class="text-xs text-gray-500 mb-3">Posted ${formatTimeAgo(item.createdAt)}</p>
                     <button data-item-id="${item.id}" class="view-details-btn mt-auto w-full bg-slate-700 hover:bg-slate-800 text-white font-semibold py-2 px-4 rounded-lg transition duration-150">View Details</button>
@@ -481,6 +505,7 @@
                             <p class="text-3xl text-blue-600 font-semibold mb-2">$${parseFloat(item.price).toFixed(2)}</p>
                             <p class="text-sm text-gray-500 mb-5">Posted ${formatTimeAgo(item.createdAt)}</p>
                             <div class="mb-6"><h3 class="text-lg font-semibold text-gray-700 mb-2">Description</h3><p class="text-gray-600 leading-relaxed">${item.description || 'No description provided.'}</p></div>
+                            <div class="mb-6"><h3 class="text-lg font-semibold text-gray-700 mb-1">Condition</h3><p class="text-gray-600">${item.condition}</p></div>
                             <div class="mb-6"><h3 class="text-lg font-semibold text-gray-700 mb-1">Category</h3><p class="text-gray-600">${item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : 'N/A'}</p></div>
                             <div class="mb-6"><h3 class="text-lg font-semibold text-gray-700 mb-1">Seller</h3><p class="text-gray-600">${item.sellerName || 'N/A'} (${item.sellerEmail || 'N/A'})</p></div>
                             <button class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg shadow hover:shadow-lg transition duration-150 contact-seller-btn ${item.isArchived ? 'opacity-50 cursor-not-allowed' : ''}" ${item.isArchived ? 'disabled' : ''}>Contact Seller (Feature Coming Soon)</button>
@@ -565,17 +590,6 @@
 
 
         // --- Post Item Form Logic ---
-        postItemForm.addEventListener('submit', async (e) => { /* ... same ... */ });
-        itemImageFileInput.addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) { imagePreview.src = e.target.result; imagePreview.classList.remove('hidden'); }
-                reader.readAsDataURL(file); itemImageUrlInput.value = '';
-            }
-        });
-        itemImageUrlInput.addEventListener('input', function() { /* ... same ... */ });
-        // (Ensure full post item logic is present from previous versions)
         postItemForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!currentUser || !currentToken) { showMessage("You must be logged in to post an item.", 'error'); showPage('loginRegisterPage'); return; }
@@ -584,6 +598,7 @@
             formData.append('description', postItemForm.itemDescription.value);
             formData.append('price', parseFloat(postItemForm.itemPrice.value));
             formData.append('category', postItemForm.itemCategory.value);
+            formData.append('condition', postItemForm.itemCondition.value);
             const imageFile = itemImageFileInput.files[0];
             const imageUrlText = itemImageUrlInput.value.trim();
             if (imageFile) formData.append('itemImageFile', imageFile);
@@ -595,6 +610,14 @@
                 showPage('homePage'); loadAndRenderItems();
             } catch (error) { /* Handled by fetchApi */ }
         });
+        itemImageFileInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) { imagePreview.src = e.target.result; imagePreview.classList.remove('hidden'); }
+                reader.readAsDataURL(file); itemImageUrlInput.value = '';
+            }
+        });
         itemImageUrlInput.addEventListener('input', function() {
             if (itemImageUrlInput.value.trim() !== '') {
                 itemImageFileInput.value = ''; imagePreview.classList.add('hidden'); imagePreview.src = '#';
@@ -602,12 +625,6 @@
         });
 
         // --- Edit Item Logic ---
-        async function populateEditFormAndShow(itemId) { /* ... same ... */ }
-        editItemImageFileInput.addEventListener('change', function(event) { /* ... same ... */ });
-        editItemImageUrlInput.addEventListener('input', function() { /* ... same ... */ });
-        editItemForm.addEventListener('submit', async (e) => { /* ... same ... */ });
-        cancelEditButton.addEventListener('click', () => { /* ... same ... */ });
-        // (Ensure full edit item logic is present from previous versions)
         async function populateEditFormAndShow(itemId) { 
             editingItemId = itemId;
             let item = allItemsCache.find(i => i.id === itemId); 
@@ -617,14 +634,20 @@
                 } catch (err) { showMessage("Could not fetch item details to edit.", 'error'); return; }
             }
             if (!item) { showMessage("Could not find item details to edit.", 'error'); return; }
-            editItemIdInput.value = item.id; editItemNameInput.value = item.name;
-            editItemDescriptionInput.value = item.description; editItemPriceInput.value = parseFloat(item.price).toFixed(2);
+            editItemIdInput.value = item.id;
+            editItemNameInput.value = item.name;
+            editItemDescriptionInput.value = item.description;
+            editItemPriceInput.value = parseFloat(item.price).toFixed(2);
             editItemCategoryInput.value = item.category;
+            editItemConditionInput.value = item.condition;
             let currentImgSrc = item.imageUrl || 'https://placehold.co/200x200/e2e8f0/cbd5e0?text=No+Image';
             if (item.imageUrl && item.imageUrl.startsWith('/uploads/')) { currentImgSrc = `${API_BASE_URL}${item.imageUrl}`; }
-            editCurrentImagePreview.src = currentImgSrc; editCurrentImagePreview.classList.remove('hidden');
+            editCurrentImagePreview.src = currentImgSrc;
+            editCurrentImagePreview.classList.remove('hidden');
             editItemImageUrlInput.value = (item.imageUrl && !item.imageUrl.startsWith('/uploads/') && !item.imageUrl.includes('placehold.co')) ? item.imageUrl : '';
-            editItemImageFileInput.value = ''; editImagePreview.classList.add('hidden'); editImagePreview.src = '#';
+            editItemImageFileInput.value = '';
+            editImagePreview.classList.add('hidden');
+            editImagePreview.src = '#';
             showPage('editItemPage');
         }
         editItemImageFileInput.addEventListener('change', function(event) { 
@@ -641,20 +664,30 @@
             }
         });
         editItemForm.addEventListener('submit', async (e) => { 
-            e.preventDefault(); if (!editingItemId) { showMessage("No item selected for editing.", 'error'); return; }
-            const formData = new FormData(); formData.append('name', editItemNameInput.value);
-            formData.append('description', editItemDescriptionInput.value); formData.append('price', parseFloat(editItemPriceInput.value));
+            e.preventDefault();
+            if (!editingItemId) { showMessage("No item selected for editing.", 'error'); return; }
+            const formData = new FormData();
+            formData.append('name', editItemNameInput.value);
+            formData.append('description', editItemDescriptionInput.value);
+            formData.append('price', parseFloat(editItemPriceInput.value));
             formData.append('category', editItemCategoryInput.value);
-            const imageFile = editItemImageFileInput.files[0]; const imageUrlText = editItemImageUrlInput.value.trim();
+            formData.append('condition', editItemConditionInput.value);
+            const imageFile = editItemImageFileInput.files[0];
+            const imageUrlText = editItemImageUrlInput.value.trim();
             if (imageFile) formData.append('itemImageFile', imageFile);
             else if (imageUrlText || imageUrlText === "") formData.append('imageUrl', imageUrlText);
             try {
                 const data = await fetchApi(`/items/${editingItemId}`, 'PUT', formData, true, true);
                 showMessage(data.message || "Item updated successfully!", 'success');
                 const index = allItemsCache.findIndex(i => i.id === editingItemId);
-                if (index !== -1) allItemsCache[index] = data.item; else { allItemsCache.push(data.item); } 
-                editingItemId = null; editItemForm.reset(); editImagePreview.classList.add('hidden'); editImagePreview.src = '#';
-                showPage('myListingsPage'); renderMyListings(); 
+                if (index !== -1) allItemsCache[index] = data.item;
+                else { allItemsCache.push(data.item); }
+                editingItemId = null;
+                editItemForm.reset();
+                editImagePreview.classList.add('hidden');
+                editImagePreview.src = '#';
+                showPage('myListingsPage');
+                renderMyListings();
             } catch (error) { /* Handled by fetchApi */ }
         });
         cancelEditButton.addEventListener('click', () => { 

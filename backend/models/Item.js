@@ -9,6 +9,14 @@ const itemSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Description is required']
     },
+    condition: {
+        type: String,
+        required: [true, 'Condition is required'],
+        enum: {
+            values: ['New', 'Like New', 'Excellent', 'Good', 'Fair'],
+            message: 'Invalid condition value. Must be one of: New, Like New, Excellent, Good, Fair'
+        }
+    },
     price: {
         type: Number,
         required: [true, 'Price is required'],
