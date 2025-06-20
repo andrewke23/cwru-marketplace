@@ -97,15 +97,16 @@
         </aside>
 
         <!-- Main Content Area -->
-        <div class="flex-1">
+        <div class="flex-1 max-w-7xl">
             <div id="messageBox" class="hidden fixed top-5 right-5 bg-blue-500 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm">
                 <p id="messageText"></p>
                 <button id="closeMessageButton" class="absolute top-1 right-2 text-xl font-bold">&times;</button>
             </div>
 
             <section id="homePage" class="page-section active-page">
-                <h1 class="text-3xl font-bold mb-8 text-center text-gray-700">Recent Listings</h1>
-                <div id="itemGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+                <div id="itemGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 px-4">
+                    <!-- Items will be dynamically inserted here -->
+                </div>
                 <div id="noResultsMessage" class="hidden text-center text-gray-500 mt-10"><p class="text-xl">No items found.</p></div>
                 <div id="loadingIndicator" class="hidden text-center text-blue-500 mt-10"><p class="text-xl">Loading items...</p></div>
             </section>
@@ -387,7 +388,7 @@
         function createItemCard(item, isMyListing = false) {
             const card = document.createElement('div');
             // Add 'relative' for positioning the badge, and 'archived-item-card' if archived
-            card.className = `bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300 flex flex-col relative ${item.isArchived ? 'archived-item-card' : ''}`;
+            card.className = `bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300 flex flex-col relative ${item.isArchived ? 'archived-item-card' : ''} p-0`;
             
             let displayImageUrl = item.imageUrl || 'https://placehold.co/400x300/e2e8f0/cbd5e0?text=No+Image';
             if (item.imageUrl && item.imageUrl.startsWith('/uploads/')) {
@@ -415,10 +416,10 @@
 
             card.innerHTML = `
                 ${archivedBadgeHtml}
-                <div class="w-full h-48 sm:h-56 bg-gray-200">
+                <div class="w-full h-52 sm:h-60 bg-gray-200">
                     <img src="${displayImageUrl}" alt="${item.name}" class="item-card-image" onerror="this.onerror=null;this.src='https://placehold.co/400x300/cccccc/999999?text=Image+Error';">
                 </div>
-                <div class="p-5 flex flex-col flex-grow">
+                <div class="p-6 flex flex-col flex-grow">
                     <h3 class="text-lg font-semibold text-gray-800 mb-2 truncate" title="${item.name}">${item.name}</h3>
                     <p class="text-2xl font-bold text-blue-600 mb-2">$${parseFloat(item.price).toFixed(2)}</p>
                     <p class="text-xs text-gray-500 mb-3">Posted ${formatTimeAgo(item.createdAt)}</p>
@@ -806,15 +807,22 @@
         document.getElementById('backToHomeFromDetails').addEventListener('click', () => { showPage('homePage'); });
 
         let searchTimeout;
-        searchInput.addEventListener('input', () => { clearTimeout(searchTimeout); searchTimeout = setTimeout(() => handleSearch(), 500); });
+        searchInput.addEventListener('input', debounce(() => {
+            loadAndRenderItems(searchInput.value.toLowerCase(), currentCategory);
+        }, 300));
 
-        document.getElementById('currentYear').textContent = new Date().getFullYear();
-        if (loadAuthDataFromStorage()) {
-            console.log("User data loaded from storage.");
+        // Debounce helper function
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
         }
-        updateNav(); 
-        loadAndRenderItems(); 
-        showPage('homePage');
 
         // --- Sidebar and Category Logic ---
         const sidebarToggle = document.getElementById('sidebarToggle');
@@ -844,7 +852,7 @@
             // Get category and load items
             const category = categoryLink.dataset.category;
             currentCategory = category;
-            loadAndRenderItems('', category);
+            loadAndRenderItems(searchInput.value.toLowerCase(), category);
 
             // Hide sidebar on mobile after selection
             if (window.innerWidth < 1024) {
@@ -852,45 +860,26 @@
             }
         });
 
-        // Update loadAndRenderItems to handle category filtering
-        async function loadAndRenderItems(searchTerm = '', categoryTerm = '') {
-            loadingIndicator.classList.remove('hidden');
-            noResultsMessage.classList.add('hidden');
-            itemGrid.innerHTML = '';
-            try {
-                let query = '/items';
-                const params = new URLSearchParams();
-                if (searchTerm) params.append('search', searchTerm);
-                if (categoryTerm) params.append('category', categoryTerm);
-                if (params.toString()) query += `?${params.toString()}`;
-                const response = await fetchApi(query);
-                const items = response.value || response;
-                allItemsCache = items;
-                renderItems(items);
-            } catch (error) {
-                noResultsMessage.classList.remove('hidden');
-                noResultsMessage.querySelector('p').textContent = "Could not load items. Please try again.";
-            } finally {
-                loadingIndicator.classList.add('hidden');
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
+            
+            if (loadAuthDataFromStorage()) {
+                console.log("User data loaded from storage.");
             }
-        }
+            
+            updateNav(); 
+            showPage('homePage');
+            loadAndRenderItems(); // Load items immediately when page loads
+        });
 
-        // Handle search with category persistence
-        searchInput.addEventListener('input', debounce(() => {
-            loadAndRenderItems(searchInput.value.toLowerCase(), currentCategory);
-        }, 300));
-
-        // Debounce helper function
-        function debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
+        // Immediately invoke initial load as well, in case DOMContentLoaded already fired
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                loadAndRenderItems();
+            });
+        } else {
+            loadAndRenderItems(); // Load items immediately if DOM is already ready
         }
     </script>
 </body>
