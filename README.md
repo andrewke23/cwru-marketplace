@@ -2,7 +2,7 @@
 
 A dedicated platform for Case Western Reserve University students to buy and sell items within the campus community that is easy to use and view. A marketplace exclusive for CWRU students that is perfect for textbooks, furniture, electronics, and more. 
 
-## 🚧 Work in Progress
+## Work in Progress
 
 This project is actively under development. While the core functionality is working, I'm continuously adding features and improvements. Feel free to check out the current version or contribute!
 
